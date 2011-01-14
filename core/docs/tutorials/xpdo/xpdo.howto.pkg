@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3b2/docbookx.dtd">
+<refentry id="{@id}">
+    <refnamediv>
+        <refname>xPDO 1.0 Quick Start Tutorial</refname>
+        <refpurpose>I have a database and a bunch of tables, now get this CRUD working!</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+        <authorblurb>
+            <para>{@link mailto:jason@opengeek.com Jason Coward}</para>
+        </authorblurb>
+    </refsynopsisdiv>
+    {@toc}
+    <refsect1 id="{@id intro}">
+        <title>From database to object/relational model</title>
+        <para>
+            For those of you with a database design already, this guide will help you quickly create
+            an object/relational model that you can use immediately to access and manipulate your
+            data and easily extend into a complete object-oriented model handling all the important
+            tasks of interacting with your tables and rows.
+        </para>
+        <refsect2 id="{@id schema}">
+            <title>The xPDO Schema</title>
+            <para>
+                A model in xPDO is represented by an XML schema which defines the bridge between the 
+                relational database design and the object-oriented PHP code used to interact with the data.
+                So the first order of business when making use of xPDO is creating the schema to describe
+                your model. Consider the model describing the sample package included in the xPDO distribution...
+            </para>
+            <programlisting role="xml">
+                <![CDATA[
+<model package="sample" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM">
+    <object class="Person" table="person" extends="xPDOSimpleObject">
+        <field key="first_name" dbtype="varchar" precision="100" phptype="string" null="false" />
+        <field key="last_name" dbtype="varchar" precision="100" phptype="string" null="false" />
+        <field key="middle_name" dbtype="varchar" precision="100" phptype="string" null="false" />
+        <field key="date_modified" dbtype="timestamp" phptype="timestamp" null="true" />
+        <field key="dob" dbtype="date" phptype="date" null="true" />
+        <field key="gender" dbtype="enum" precision="'','M','F'" phptype="string" null="false" />
+        <field key="blood_type" dbtype="enum" precision="'','A+','A-','B+','B-','AB+','AB-','O+','O-'" phptype="string" null="false" />
+        <field key="username" dbtype="varchar" precision="255" phptype="string" null="false" index="unique" />
+        <field key="password" dbtype="varchar" precision="255" phptype="string" null="false" />
+        <field key="security_level" dbtype="tinyint" precision="4" phptype="integer" null="false" />
+        <composite alias="PersonPhone" class="PersonPhone" local="id" foreign="person" cardinality="many" owner="local" />
+    </object>
+    <object class="PersonPhone" table="person_phone" extends="xPDOObject">
+        <field key="person" dbtype="int" precision="11" phptype="integer" null="false" index="pk" />
+        <field key="phone" dbtype="int" precision="11" phptype="integer" null="false" index="pk" />
+        <field key="is_primary" dbtype="binary" precision="1" phptype="string" null="false" />
+        <aggregate alias="Person" class="Person" local="person" foreign="id" cardinality="one" owner="foreign" />
+        <composite alias="Phone" class="Phone" local="phone" foreign="id" cardinality="one" owner="foreign" />
+    </object>
+    <object class="Phone" table="phone" extends="xPDOSimpleObject">
+        <field key="type" dbtype="enum" precision="'','home','work','mobile'" phptype="string" null="false" />
+        <field key="number" dbtype="varchar" precision="20" phptype="string" null="false" />
+        <field key="date_modified" dbtype="timestamp" phptype="timestamp" null="true" />
+        <composite alias="PersonPhone" class="PersonPhone" local="id" foreign="phone" cardinality="many" owner="local" />
+    </object>
+</model>
+                ]]>
+            </programlisting>
+            <para>
+                This representation of a model can be generated from an existing database, as well as be used to
+                forward-engineer the PHP code needed to implement a full-featured CRUD API. However,
+                there is not yet round-trip engineering support from database-to-schema-to-php, but it
+                is planned along with the introduction of other change management features.
+            </para>
+            <para>
+                
+            </para>
+        </refsect2>
+    </refsect1>
+</refentry>

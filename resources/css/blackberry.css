@@ -1,0 +1,19 @@
+#header .logo{background: url(images/logo.gif) no-repeat;}
+.entry-links li a{	background:url(images/bullet-red-circle.gif) no-repeat;}
+.more a{background: url(images/bullet-red-circle.gif) no-repeat 100% 0;}
+#content .scroll-box .vscroll-line{background:url(images/bg-scrollbar.gif) repeat-y;}
+.scroll-box .vscroll-slider{background:url(images/bg-scroll-slider.gif) no-repeat;}
+.scroll-box .vscroll-line{background:url(images/bg-scrollbar.gif) repeat-y;}
+.scroll-box .vscroll-slider{background:url(images/bg-scroll-slider.gif) no-repeat;}
+.sub-links li{background:url(images/separator-sub-links.gif) no-repeat 0 3px;}
+#content .entry-links {
+	bottom:40px;
+	right:10px;
+}
+.links-area{position:relative;}
+.links-area .entry-links{
+	width:160px;
+	position:absolute;
+	top:0;
+	right:0;
+}

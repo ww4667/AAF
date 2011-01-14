@@ -1,0 +1,7 @@
+input[type="image"] {
+	padding: 0;
+	border: none;
+}
+#wrapper a { color: #8c0c04; }
+#wrapper a:hover { text-decoration: none; }
+body{-webkit-text-size-adjust:none;}

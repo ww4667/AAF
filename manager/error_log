@@ -1,0 +1,38 @@
+[23-Sep-2010 14:47:31] PHP Fatal error:  Call to undefined method aafBusiness::initialize() in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 8
+[23-Sep-2010 14:48:22] PHP Fatal error:  Call to undefined method aafBusiness::initialize() in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 8
+[23-Sep-2010 14:48:26] PHP Fatal error:  Call to undefined method aafBusiness::initialize() in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 8
+[23-Sep-2010 14:49:59] PHP Fatal error:  Call to undefined method aafBusiness::initialize() in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 8
+[23-Sep-2010 15:03:37] PHP Fatal error:  Call to a member function load() on a non-object in /home/aafdsmc/public_html/core/components/aafbusinesses/model/aafbusinesses/aafbusiness.class.php on line 16
+[23-Sep-2010 15:06:49] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafbusinesses/model/aafbusinesses/aafbusiness.class.php on line 18
+[23-Sep-2010 15:11:51] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:13:02] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:13:27] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:15:30] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:16:15] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:18:53] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:19:18] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:19:20] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:23:35] PHP Fatal error:  Class 'aafBusiness' not found in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 9
+[23-Sep-2010 15:24:05] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:59:37] PHP Fatal error:  Call to a member function getPackage() on a non-object in /home/aafdsmc/public_html/core/xpdo/om/xpdoobject.class.php on line 591
+[23-Sep-2010 15:59:45] PHP Fatal error:  Class 'aafBusiness_mysql' not found in /home/aafdsmc/public_html/core/xpdo/xpdo.class.php on line 537
+[23-Sep-2010 16:26:34] PHP Parse error:  syntax error, unexpected ';' in /home/aafdsmc/public_html/core/components/aafbusinesses/controllers/index.php on line 11
+[24-Sep-2010 13:13:35] PHP Parse error:  syntax error, unexpected ')' in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 11
+[24-Sep-2010 18:14:39] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:20:19] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:24:36] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:28:08] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:36:49] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:37:01] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/model/modx/modrequest.class.php on line 310
+[24-Sep-2010 18:38:27] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 19
+[24-Sep-2010 18:39:02] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 19
+[24-Sep-2010 18:43:41] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 19
+[24-Sep-2010 18:44:03] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 19
+[24-Sep-2010 18:44:21] PHP Fatal error:  Call to a member function loadClass() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 19
+[24-Sep-2010 18:44:45] PHP Fatal error:  Call to a member function handleRequest() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 26
+[24-Sep-2010 18:47:22] PHP Fatal error:  Call to a member function handleRequest() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 26
+[24-Sep-2010 19:39:27] PHP Fatal error:  Call to a member function handleRequest() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 26
+[24-Sep-2010 19:42:08] PHP Fatal error:  Call to a member function handleRequest() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 26
+[24-Sep-2010 20:47:24] PHP Fatal error:  Call to a member function handleRequest() on a non-object in /home/aafdsmc/public_html/core/components/aafmembers/controllers/index.php on line 26
+[24-Sep-2010 21:46:23] PHP Fatal error:  Class 'QuipControllerRequest' not found in /home/aafdsmc/public_html/core/components/aaf/model/aaf/aaf.class.php on line 128
+[24-Sep-2010 21:47:13] PHP Fatal error:  Class 'QuipControllerRequest' not found in /home/aafdsmc/public_html/core/components/aaf/model/aaf/aaf.class.php on line 128

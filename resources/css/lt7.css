@@ -1,0 +1,1 @@
+.sub-links li{background-image: expression( (this===this.parentNode.childNodes[0]) ? "none" : "auto"); }
