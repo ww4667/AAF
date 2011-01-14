@@ -4,7 +4,7 @@
  */
 $coreDirectory = "core";
 $modulesDirectory = "modules";
-$defaultModule = "facility";
+$defaultModule = "member";
 
 // database varialbes
 $dbHost = 'localhost';

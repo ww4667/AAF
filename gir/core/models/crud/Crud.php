@@ -977,7 +977,7 @@ class Crud {
 
     private function _RunQuery( $query, $asArray = false, $openConnection = true ){
     	
-    	if( isset( $_SESSION ) && session_id() ){
+    	if( isset( $_SESSION ) ){
     		if( $openConnection ){
 				$this->database_connection->Open();
     		}

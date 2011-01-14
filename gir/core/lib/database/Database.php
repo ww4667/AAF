@@ -25,13 +25,13 @@ class Database {
         $this->password = $dbPass;
     }
    
-    protected function __set($name, $value) {
+    public function __set($name, $value) {
         if (isset($this->props[$name])) {
             $this->props[$name] = $value;
         }
     }
    
-    protected function __get($name) {
+    public function __get($name) {
         if (isset($this->props[$name])) {
             return $this->props[$name];
         } else {
