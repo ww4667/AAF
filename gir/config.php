@@ -3,7 +3,7 @@
  * Set the variables below to setup the application
  */
 $coreDirectory = "core";
-$modulesDirectory = "modules";
+$modulesDirectory = $_SERVER["DOCUMENT_ROOT"] . "/gir/modules";
 $defaultModule = "member";
 
 // database varialbes

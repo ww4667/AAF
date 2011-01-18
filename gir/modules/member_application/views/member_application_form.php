@@ -1,10 +1,18 @@
+<?
+
+        ?>
 <h2>Your Information</h2>
 
 <form id="member_apply" class="form" action="" method="post" accept-charset="utf-8">
+	<input type="hidden" name="aaf_join_form" />
 	<ol>
 	    <li>
-	    	<label><strong>*</strong> Your full name:</label>
-			<input name="name" type="text" class="required" />
+	    	<label><strong>*</strong> Your first name:</label>
+			<input name="first_name" type="text" class="required" />
+	    </li>
+	    <li>
+	    	<label><strong>*</strong> Your last name:</label>
+			<input name="last_name" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Email:</label>
@@ -16,19 +24,19 @@
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Organization you work for:</label>
-			<input name="org_name" type="text" class="required" />
+			<input name="company" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Organization address:</label>
-			<input name="org_address" type="text" class="required" />
+			<input name="address" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Organization city:</label>
-			<input name="org_city" type="text" class="required" />
+			<input name="city" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Organization state:</label>
-			<select name="org_state" class="required">
+			<select name="state" class="required">
 		        <option value="">--Select a State--</option>
 		        <option>Iowa</option>
 		        <option>Nebraska</option>
@@ -37,7 +45,7 @@
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Organization zip code:</label>
-			<input name="org_zip" type="text" class="required" />
+			<input name="zip_code" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Job description that qualifies you for membership in AAF:</label>
@@ -45,7 +53,7 @@
 	    </li>
 	    <li>
 	    	<label><strong>*</strong> Your Phone:</label>
-			<input name="phone" type="text" class="required" />
+			<input name="phone_number" type="text" class="required" />
 	    </li>
 	    <li>
 	    	<label>Your Fax:</label>
@@ -66,16 +74,10 @@
 	    <li class="form_stack">
 	    	<label><strong>*</strong> Membership classification:</label>
 			<ol>
-				<li><input type="radio" name="classification" value="Active ($100)" class="required radio_check" /><label class="radio_check">Active ($100)</label></li>
-				<li><input type="radio" name="classification" value="Associate ($100)" class="radio_check" /><label class="radio_check">Associate ($100)</label></li>
-				<li><input type="radio" name="classification" value="Non-Resident ($35)" class="radio_check" /><label class="radio_check">Non-Resident ($35)</label></li>
-				<li><input type="radio" name="classification" value="Student ($35)" class="radio_check" /><label class="radio_check">Student ($35)</label></li>
-				<li><input type="radio" name="classification" value="Retired ($20)" class="radio_check" /><label class="radio_check">Retired ($20)</label></li>
-				<li><input type="radio" name="classification" value="Corporate ($360 for 4 people)" class="radio_check" /><label class="radio_check">Corporate ($360 for 4 people)</label></li>
-				<li><input type="radio" name="classification" value="Corporate ($850 for 10 people)" class="radio_check" /><label class="radio_check">Corporate ($850 for 10 people)</label></li>
-				<li><input type="radio" name="classification" value="Corporate ($85 for each additional person)" class="radio_check" /><label class="radio_check">Corporate ($85 for each additional person)</label></li>
-				<li><input type="radio" name="classification" value="Professional Full-Time Educator ($75)" class="radio_check" /><label class="radio_check">Professional Full-Time Educator ($75)</label></li>
-				<li><input type="radio" name="classification" value="New Graduate Professional ($75)" class="radio_check" /><label class="radio_check">New Graduate (first year out of school) Professional ($75)</label></li>
+			<?   
+    		     $mc = new Membership_Classification();
+                 $mc->formBuilder("radio");
+            ?>
 			</ol>
 	    </li>
 	    <li class="form_stack">
@@ -206,6 +208,21 @@
 </form>
 <script type="text/javascript">
 	$(document).ready(function() { 
-		$("#member_apply").validate();
+		$("#member_apply").validate({
+				rules: {
+					email: {
+						required: true,
+						email: true,
+						remote: "/remote/does-email-exist.html"
+					}
+				},
+				messages: {
+					email: {
+						required: 'This field is required',
+						email: 'Enter a valid email address',
+						remote: 'Email address already registered.'
+					}
+				}
+			});
 	});
 </script>

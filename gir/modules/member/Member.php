@@ -18,7 +18,8 @@ class Member extends User {
                                           array("type"=>"text","label"=>"Phone Number","field"=>"phone_number"),
                                           array("type"=>"text","label"=>"Term","field"=>"term"),
                                           array("type"=>"number","label"=>"Paid","field"=>"paid"),
-                                          array("type"=>"number","label"=>"Letter Sent","field"=>"letter_sent")
+                                          array("type"=>"number","label"=>"Letter Sent","field"=>"letter_sent"),
+										  array("type"=>"join","label"=>"User Join","field"=>"join_user")
 											);
 	function __construct(){
 		parent::__construct();
@@ -29,6 +30,14 @@ class Member extends User {
 	
 	public function getObjectProperties() {
 		return $this->_OBJECT_PROPERTIES;
+	}
+	
+	public function JoinUser( $user_id ) {
+		return $this->_joinUser( $user_id );
+	}
+	
+	private function _joinUser( $user_id ) {
+		$this->AddJoin( $user_id, "join_user" );
 	}
 }
 ?>

@@ -1,5 +1,4 @@
 <?php
-
 ini_set('display_errors', 1); 
 ini_set('log_errors', 1); 
 //ini_set('error_log', dirname(__FILE__) . '/error_log.txt'); 
@@ -31,6 +30,9 @@ $gir = new Gir();
 
 // include application modules
 require_once($modulesDirectory."/member/Member.php");
+require_once($modulesDirectory."/member_application/Member_Application.php");
+require_once($modulesDirectory."/membership_classification/Membership_Classification.php");
+require_once($modulesDirectory."/mailer/Mailer.php");
 
 // get controller and method from page request
 $controller = isset($controller) ? $controller : NULL;
