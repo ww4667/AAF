@@ -3,7 +3,7 @@
 
 $op = $m->getObjectProperties();
 
-if (!isset($_POST)){
+if (!isset($_POST) || empty($_POST)){
 ?>
 <form action="" method = "post">
 <?

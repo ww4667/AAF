@@ -26,5 +26,9 @@ class Member extends User {
 			$this->{$p['field']} = "";
 		}
 	}
+	
+	public function getObjectProperties() {
+		return $this->_OBJECT_PROPERTIES;
+	}
 }
 ?>
