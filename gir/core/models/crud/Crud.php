@@ -217,6 +217,23 @@ class Crud {
 		}
 	}
 	
+	public function QueryObjectItems( $whereStatement ) {
+		$items = $this->_QueryObjectItems( $whereStatement );
+		if (count($items) > 0) {
+			$objs = array();
+			foreach ($items as $item) {
+				$obj = clone $this;
+				foreach ($item as $key => $val) {
+					$obj->$key = $val;
+				}
+				$objs[] = $obj;
+			}
+			return $objs;
+		} else {
+			return FALSE;
+		}
+	}
+	
 	public function UpdateItem( $itemData = null ) {
 		if ( is_null($itemData) )
 			$itemData = (array) $this;
@@ -842,6 +859,35 @@ class Crud {
 		$query .= " LEFT JOIN 	(SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_DATES') . " UNION SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_NUMBERS') . " UNION SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_TEXT') . ") as v on v.property_name_id = od.property_name_id AND v.item_id = o.id";
 		$query .= " WHERE o.object_name_id = $objectNameId";
 		$query .= " GROUP BY o.id";
+		
+		$this->database_connection->Open();
+		$result = $this->database_connection->Query( $query );
+		$arr1 = $this->database_connection->FetchAssocArray( $result );
+		$this->database_connection->Close();
+		
+		return $arr1;
+	}
+	
+	private function _QueryObjectItems( $whereStatement = "id != null" ) {
+		$objectNameId = $this->_OBJECT_NAME_ID;
+		$properties = $this->_OBJECT_PROPERTIES;
+		$fields = ""; 
+		foreach ($properties as $p) {
+			if ($fields == "") {
+				$fields .= " MAX(IF(pn.label='".$p['field']."', v.value, '')) AS `".$p['field']."`";
+			} else {
+				$fields .= ", MAX(IF(pn.label='".$p['field']."', v.value, '')) AS `".$p['field']."`";
+			}
+		}
+		$query = "SELECT * FROM (SELECT o.id, o.created_ts, o.updated_ts, o.object_name_id,";
+		$query .= $fields;
+		$query .= " FROM " . $this->_TABLE_PREFIX.constant('Crud::_ITEMS') . " as o";
+		$query .= " LEFT JOIN " . $this->_TABLE_PREFIX.constant('Crud::_OBJECT_DEFINITIONS') . " as od on od.object_name_id = o.object_name_id";
+		$query .= " LEFT JOIN " . $this->_TABLE_PREFIX.constant('Crud::_PROPERTY_NAMES') . " as pn on pn.id = od.property_name_id";
+		$query .= " LEFT JOIN 	(SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_DATES') . " UNION SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_NUMBERS') . " UNION SELECT * FROM " . $this->_TABLE_PREFIX.constant('Crud::_VALUES_TABLE_TEXT') . ") as v on v.property_name_id = od.property_name_id AND v.item_id = o.id";
+		$query .= " WHERE o.object_name_id = $objectNameId";
+		$query .= " GROUP BY o.id) as tbl";
+		$query .= " WHERE $whereStatement";
 		
 		$this->database_connection->Open();
 		$result = $this->database_connection->Query( $query );

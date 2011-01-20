@@ -13,11 +13,28 @@ class Mailer{
 	static function include_user_message_body($template,$email_contents_file,$object){
 		ob_start(); //start the buffer
 			$object=$object;
-			$email_contents_file = $_SERVER['DOCUMENT_ROOT'].'/views/mailer/'.$email_contents_file.'.php';
-			include($_SERVER['DOCUMENT_ROOT'].'/views/mailer/'.$template.'.php');
+			$email_contents_file = $_SERVER['DOCUMENT_ROOT'].'/gir/modules/mailer/views/'.$email_contents_file.'.php';
+			include($_SERVER['DOCUMENT_ROOT'].'/gir/modules/mailer/views/'.$template.'.php');
 			$message = ob_get_contents();
 		ob_end_clean();
 		return $message;
+	}
+	
+	static function application_confirmation_email($i_object){
+		$mail = new Zend_Mail();
+		$mail->setFrom('do_not_reply@aafdsm.com', 'AAF Des Moines');
+
+		$mail->setSubject("Thank you! We've received your application.");
+		$mail->setBodyText("We've received your membership application. After we review the application we will send an email with your application status and further instructions.");
+		$mail->addTo($i_object['email'], $i_object['fname'] . " " . $i_object['lname']);
+		$mail->addBcc("greg@slashwebstudios.com", "AAF Administrator");
+		
+		//include_user_message_body(TEMPLATE_TO_USE, BODY_FILE_TO_USE, OBJECT_FOR_POPULATING_EMAIL_CONTENTS)
+		$message = Mailer::include_user_message_body("base_template","application_confirmation",$i_object); //the template to use from /views/mailer (minus the ".php")
+		
+		//setting both bodyText AND bodyHtml sends a multipart message for people with text vs. html
+		$mail->setBodyHtml($message);
+		$mail->send();
 	}
 	
 	static function welcome_email($i_object){

@@ -34,6 +34,10 @@ require_once($modulesDirectory."/member_application/Member_Application.php");
 require_once($modulesDirectory."/membership_classification/Membership_Classification.php");
 require_once($modulesDirectory."/mailer/Mailer.php");
 
+// include additional library and include files
+require_once($librariesDirectory."/usaepay/usaepay.php");
+// require_once($includesDirectory."/some_cool_inlucde.php");
+
 // get controller and method from page request
 $controller = isset($controller) ? $controller : NULL;
 $method = isset($method) ? $method : NULL;
