@@ -1,0 +1,1 @@
+<h2>Thanks for submitting a job posting</h2>
