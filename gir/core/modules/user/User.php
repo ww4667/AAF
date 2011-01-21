@@ -41,6 +41,10 @@ class User extends Crud {
 		return $this->_logout();
 	}
 	
+	public function EmailCheck( $email ) {
+		return $this->_emailCheck( $email );
+	}
+	
 	public function ForgotPassword( $email ) {
 		return $this->_forgotPassword( $email );
 	}
@@ -104,7 +108,12 @@ class User extends Crud {
 	}
 	
     private function _emailCheck( $email ) {
-        ;
+		$email = trim(strtolower($email));
+        // check if email exists
+		$users = $this->GetItemsObjByPropertyValue( 'email', $email );
+		if (empty($users))
+			return false;
+		return true;
     }
     
     private function _setLastLogin() {
