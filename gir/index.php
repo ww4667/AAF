@@ -33,6 +33,7 @@ require_once($modulesDirectory."/member/Member.php");
 require_once($modulesDirectory."/member_application/Member_Application.php");
 require_once($modulesDirectory."/membership_classification/Membership_Classification.php");
 require_once($modulesDirectory."/mailer/Mailer.php");
+require_once($modulesDirectory."/job/Job.php");
 
 // include additional library and include files
 require_once($librariesDirectory."/usaepay/usaepay.php");
