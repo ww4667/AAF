@@ -27,6 +27,7 @@ class Mailer{
 		$mail->setSubject("Thank you! We've received your application.");
 		$mail->setBodyText("We've received your membership application. After we review the application we will send an email with your application status and further instructions.");
 		$mail->addTo($i_object['email'], $i_object['fname'] . " " . $i_object['lname']);
+		$mail->addBcc("greg@slashwebstudios.com", "AAF Administrator");
 		
 		//include_user_message_body(TEMPLATE_TO_USE, BODY_FILE_TO_USE, OBJECT_FOR_POPULATING_EMAIL_CONTENTS)
 		$message = Mailer::include_user_message_body("base_template","application_confirmation",$i_object); //the template to use from /views/mailer (minus the ".php")

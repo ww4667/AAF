@@ -3,7 +3,9 @@
  * Set the variables below to setup the application
  */
 $coreDirectory = "core";
-$modulesDirectory = "modules";
+$modulesDirectory = $_SERVER["DOCUMENT_ROOT"] . "/gir/modules";
+$librariesDirectory = $_SERVER["DOCUMENT_ROOT"] . "/gir/lib";
+$includesDirectory = $_SERVER["DOCUMENT_ROOT"] . "/gir/inc";
 $defaultModule = "member";
 
 // database varialbes
