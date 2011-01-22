@@ -1,0 +1,1 @@
+<div>MANAGER FOOTER</div>
