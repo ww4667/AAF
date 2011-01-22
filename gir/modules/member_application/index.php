@@ -44,6 +44,49 @@ switch($method){/* Add Member */
     }
     
   break;
+  case 'view-applications':
+    $m = new Member_Application();
+        
+    $PAGE_BODY = "view_applications.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");  
+  break;
+  
+  /* Add Member */
+  case 'approve-app':
+    $a = new Member_Application();
+    $m = new Member();
+    $u = new User();
+    
+    $app_id = $_GET["app_id"];
+    
+    $theApp = $a->getApplicationData($app_id);
+    
+    $app_data = json_decode($theApp->application_data, true);
+    
+    //print_r($app_data);
+         
+    $u->CreateItem($app_data);
+    
+    $m->CreateItem($app_data);     
+
+    $m->JoinUser($u->newId);
+    
+    $theApp->approved = 1;
+    $a->UpdateItem();   
+    
+    $email_data["email"] = $app_data["email"];
+    $email_data["fname"] = $app_data["first_name"];
+    $email_data["lname"] = $app_data["last_name"];
+    
+    Mailer::application_approved_email($email_data);
+      
+    
+    //this is where we send credit card information
+    
+  
+    
+  break;
 	
 }
 
