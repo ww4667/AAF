@@ -7,9 +7,26 @@ if(!isset($_SESSION)){
 switch($method){/* Add Member */
   /* Add Member */
   case 'submit-job':
+	require_once($_SERVER['DOCUMENT_ROOT']."/gir/lib/recaptcha-php-1.10/recaptchalib.php"); //include the re-captcha libraries
 	$j = new Job();
     
     if ( isset($_POST['job_title']) ) {
+
+		if(isset($_POST["email"])){
+			/* CHECK RECAPTCHA */
+			$recaptcha_public_key = "6LcPowkAAAAAAO81P8YHWUZLyalPKk3_--anwzF2";
+			$recaptcha_private_key = "6LcPowkAAAAAAPml_ZNnY1pa05JecT0EDRWK6ba3";
+			$captcha_resp = recaptcha_check_answer ($recaptcha_private_key, $_SERVER["REMOTE_ADDR"], $_POST["recaptcha_challenge_field"], $_POST["recaptcha_response_field"]);
+			if (!$captcha_resp->is_valid) {
+				$errors=true;
+				array_push($error_messages, "The challenge text wasn't entered correctly, please try again.");
+			} elseif ($captcha_resp->is_valid) {
+				$errors=false;
+				array_push($success_messages, "Thank you for contacting Slash/Web Studios. We'll be in touch!");
+			}
+		}
+		
+		
         $post_data = $_POST;
         $clean_data = array();
         foreach ($post_data as $key => $val) {
@@ -18,31 +35,42 @@ switch($method){/* Add Member */
         }
             
         $j->CreateItem($clean_data);                  
+        $email_data = array();
+        
+        $full_name = explode(" ", $clean_data["name"]);
+        
+        $email_data["email"] = $clean_data["email"];
+        $email_data["fname"] = $full_name[0];
+        $email_data["lname"] = $full_name[1];
+        $email_data["job_data"] = $clean_data;
+       
+        Mailer::submit_job_confirmation_email($email_data);
               
-        $PAGE_BODY = "submit_job_confirm.php";      /* which file to pull into the template */
+        $PAGE_BODY = "submit_job_confirm.php";      /* which file to pull into the template */    
     
-    
-        require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");
-      
     } else {
         
         $PAGE_BODY = "submit_job.php";      /* which file to pull into the template */
          
+    }    
         require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");
-    }
-    
   break;
   
   case 'view-jobs':
     $j = new Job();
-    $j->showApprovedJobs();      
+        
+    $PAGE_BODY = "view_jobs.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");  
     break;
   
-  case 'job-detail':
+  case 'job-details':
     $j = new Job();
     $job = $_GET["job"];
     
-    $j->showjobDetail($job);      
+    $PAGE_BODY = "job_details.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");      
     break;
 	
 }

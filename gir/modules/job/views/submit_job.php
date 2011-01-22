@@ -33,6 +33,13 @@ foreach($op as $p){
 }
 
 ?>
+	<li id="recaptcha">
+		<script>var RecaptchaOptions = { theme: 'white' };</script>
+		<? 
+		$publickey="6LcPowkAAAAAAO81P8YHWUZLyalPKk3_--anwzF2";
+		echo recaptcha_get_html($publickey);
+		?>
+	</li>
      <li>
         <label>&nbsp;</label>
         <input class="submit_btn" type="image" value="Send Question" src="/resources/images/submit.png" alt="Submit Job" />
@@ -45,21 +52,6 @@ foreach($op as $p){
 
 <script type="text/javascript">
     $(document).ready(function() { 
-        $("#submit_job_form").validate({
-                rules: {
-                    email: {
-                        required: true,
-                        email: true,
-                        remote: "/remote/does-email-exist.html"
-                    }
-                },
-                messages: {
-                    email: {
-                        required: 'This field is required',
-                        email: 'Enter a valid email address',
-                        remote: 'Email address already registered.'
-                    }
-                }
-            });
+        $("#submit_job_form").validate();
     });
 </script>
