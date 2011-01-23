@@ -423,16 +423,12 @@ abstract class xPDOQuery extends xPDOCriteria {
 
     public function hydrateGraphParent(& $instances, $row) {
         $hydrated = false;
-        if ($instance= $this->xpdo->newObject($this->_class)) {
-            $instance->_lazy= array_keys($instance->_fields);
-            $instance->fromArray($row, $this->_alias . '_', true, true);
+        $instance = $this->xpdo->call($this->getClass(), '_loadInstance', array(& $this->xpdo, $this->getClass(), $this->getAlias(), $row));
+        if (is_object($instance)) {
             $pk= $instance->getPrimaryKey();
             if (is_array($pk)) $pk= implode('-', $pk);
             if (isset ($instances[$pk])) {
                 $instance= & $instances[$pk];
-            } else {
-                $instance->_dirty= array ();
-                $instance->_new= false;
             }
             foreach ($this->graph as $relationAlias => $subRelations) {
                 $this->hydrateGraphNode($row, $instance, $relationAlias, $subRelations);
@@ -455,16 +451,11 @@ abstract class xPDOQuery extends xPDOCriteria {
         $relObj= null;
         if ($relationMeta= $instance->getFKDefinition($alias)) {
             if ($row[$alias.'_'.$relationMeta['foreign']] != null) {
-                if ($relObj= $this->xpdo->newObject($relationMeta['class'])) {
-                    $relObj->_lazy= array_keys($relObj->_fields);
-                    $prefix= $alias . '_';
-                    $relObj->fromArray($row, $prefix, true, true);
-                    $relObj->_new= false;
-                    $relObj->_dirty= array ();
+                $relObj = $this->xpdo->call($relationMeta['class'], '_loadInstance', array(& $this->xpdo, $relationMeta['class'], $alias, $row));
+                if ($relObj) {
                     if (strtolower($relationMeta['cardinality']) == 'many') {
                         $instance->addMany($relObj, $alias);
-                    }
-                    else {
+                    } else {
                         $instance->addOne($relObj, $alias);
                     }
                 }
@@ -497,10 +488,7 @@ abstract class xPDOQuery extends xPDOCriteria {
      */
     public function prepare($bindings= array (), $byValue= true, $cacheFlag= null) {
         $this->stmt= null;
-        if (empty ($this->sql)) {
-            $this->construct();
-        }
-        if (!empty ($this->sql) && $this->stmt= $this->xpdo->prepare($this->sql)) {
+        if ($this->construct() && $this->stmt= $this->xpdo->prepare($this->sql)) {
             $this->bind($bindings, $byValue, $cacheFlag);
         }
         return $this->stmt;
@@ -586,7 +574,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                         else {
                             $type= PDO::PARAM_STR;
                         }
-                        if (strtoupper($operator) == 'IN' && is_array($val)) {
+                        if (in_array(strtoupper($operator), array('IN', 'NOT IN')) && is_array($val)) {
                             $vals = array();
                             foreach ($val as $v) {
                                 switch ($type) {
@@ -597,7 +585,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                                         $vals[] = $this->xpdo->quote($v);
                                         break;
                                     default:
-                                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing IN condition with key {$key}: " . print_r($v, true));
+                                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing {$operator} condition with key {$key}: " . print_r($v, true));
                                         break;
                                 }
                             }
@@ -607,7 +595,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                                 $result[]= new xPDOQueryCondition(array('sql' => $sql, 'binding' => null, 'conjunction' => $conj));
                                 continue;
                             } else {
-                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing condition with key {$key}: " . print_r($val, true));
+                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing {$operator} condition with key {$key}: " . print_r($val, true));
                                 continue;
                             }
                         }

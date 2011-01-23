@@ -5,6 +5,7 @@
  */
 $xpdo_meta_map['modPlugin']= array (
   'package' => 'modx',
+  'version' => '1.1',
   'table' => 'site_plugins',
   'fields' => 
   array (
@@ -68,6 +69,41 @@ $xpdo_meta_map['modPlugin']= array (
       'index' => 'fk',
     ),
   ),
+  'indexes' => 
+  array (
+    'locked' => 
+    array (
+      'alias' => 'locked',
+      'primary' => false,
+      'unique' => false,
+      'type' => 'BTREE',
+      'columns' => 
+      array (
+        'locked' => 
+        array (
+          'length' => '',
+          'collation' => 'A',
+          'null' => false,
+        ),
+      ),
+    ),
+    'disabled' => 
+    array (
+      'alias' => 'disabled',
+      'primary' => false,
+      'unique' => false,
+      'type' => 'BTREE',
+      'columns' => 
+      array (
+        'disabled' => 
+        array (
+          'length' => '',
+          'collation' => 'A',
+          'null' => false,
+        ),
+      ),
+    ),
+  ),
   'composites' => 
   array (
     'PluginEvents' => 
@@ -88,7 +124,7 @@ $xpdo_meta_map['modPlugin']= array (
         'invalid' => 
         array (
           'type' => 'preg_match',
-          'rule' => '/^(?!\s)[a-zA-Z0-9_-\x7f-\xff\s]+(?!\s)$/',
+          'rule' => '/^(?!\\s)[a-zA-Z0-9_-\\x7f-\\xff\\s]+(?!\\s)$/',
           'message' => 'plugin_err_invalid_name',
         ),
       ),

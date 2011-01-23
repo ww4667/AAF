@@ -19,20 +19,13 @@ if ($oldPolicy == null) return $modx->error->failure($modx->lexicon('policy_err_
 /* duplicate policy */
 $newPolicy = $modx->newObject('modAccessPolicy');
 $newPolicy->fromArray($oldPolicy->toArray('',true), '', false, true);
-$newPolicy->set('name',$modx->lexicon('duplicate_of').$newPolicy->get('name'));
+$newPolicy->set('name',$modx->lexicon('duplicate_of',array(
+    'name' => $newPolicy->get('name'),
+)));
 
 /* save new policy */
 if ($newPolicy->save() === false) {
     return $modx->error->failure($modx->lexicon('policy_err_duplicate'));
-}
-
-/* save permissions */
-$permissions = $oldPolicy->getMany('Permissions');
-foreach ($permissions as $permission) {
-    $newPerm = $modx->newObject('modAccessPermission');
-    $newPerm->fromArray($permission->toArray());
-    $newPerm->set('policy',$newPolicy->get('id'));
-    $newPerm->save();
 }
 
 /* log manager action */

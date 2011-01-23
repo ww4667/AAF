@@ -15,16 +15,6 @@ class modActionDom extends modAccessibleSimpleObject {
     public function apply($objId = '') {
         if (empty($objId)) $objId = $_REQUEST['id'];
         $rule = '';
-        /* first check to see if there is any constraints on this rule */
-        $constraint = $this->get('constraint');
-        $constraintField = $this->get('constraint_field');
-        $constraintClass = $this->get('constraint_class');
-        if (!empty($constraintClass) && !empty($constraint) && !empty($constraintField)) {
-            $obj = $this->xpdo->getObject($constraintClass,$objId);
-            if ($obj instanceof $constraintClass && $obj->get($constraintField) != $constraint) {
-                return $rule;
-            }
-        }
 
         /* now switch by types of rules */
         switch ($this->get('rule')) {
@@ -38,21 +28,21 @@ class modActionDom extends modAccessibleSimpleObject {
             case 'fieldTitle':
                 $fields = explode(',',$this->get('name'));
                 $values = explode(',',$this->get('value'));
-                $rule = 'Ext.getCmp("'.$this->get('container').'").setLabel('.$this->xpdo->toJSON($fields).','.$this->xpdo->toJSON($values).');';
-                break;
-            case 'fieldDefault':
-            case 'fieldDefaultValue':
-                $rule = 'Ext.getCmp("'.$this->get('container').'").getForm().findField("'.$this->get('name').'").setValue("'.$this->get('value').'");';
+                $rule = 'MODx.on("ready",function() { MODx.renameLabel("'.$this->get('container').'",'.$this->xpdo->toJSON($fields).','.$this->xpdo->toJSON($values).'); });';
                 break;
             case 'panelTitle':
             case 'tabTitle':
             case 'tabLabel':
-
                 $rule = 'Ext.getCmp("'.$this->get('name').'").setTitle("'.$this->get('value').'")';
                 break;
             case 'tabVisible':
                 if (!$this->get('value')) {
-                    $rule = 'MODx.hideTab("'.$this->get('container').'","'.$this->get('name').'");';
+                    $tabs = explode(',',$this->get('name'));
+                    $rule = '';
+                    foreach ($tabs as $tab) {
+                        $tab = trim($tab);
+                        $rule .= 'MODx.hideTab("'.$this->get('container').'","'.$tab.'");';
+                    }
                 }
                 break;
             case 'tabNew':
@@ -60,8 +50,8 @@ class modActionDom extends modAccessibleSimpleObject {
                 $rule = 'MODx.addTab("'.$this->get('container').'",{title:"'.$title.'",id:"'.$this->get('name').'"});';
                 break;
             case 'tvMove':
-                $tvs = explode(',',$this->get('value'));
-                $rule = 'MODx.on("ready",function() { MODx.moveTV('.$this->xpdo->toJSON($tvs).',"'.$this->get('name').'"); });';
+                $tvs = explode(',',$this->get('name'));
+                $rule = 'MODx.moveTV('.$this->xpdo->toJSON($tvs).',"'.$this->get('value').'");';
                 break;
             default: break;
         }

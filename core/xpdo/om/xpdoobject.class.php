@@ -221,14 +221,13 @@ class xPDOObject {
      * Responsible for loading a result set from the database.
      *
      * @static
-     * @access protected
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param string $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or xPDOCriteria instance.
      * @return PDOStatement A reference to a PDOStatement representing the
      * result set.
      */
-    protected static function & _loadRows(& $xpdo, $className, $criteria) {
+    public static function & _loadRows(& $xpdo, $className, $criteria) {
         $rows= null;
         if ($criteria->prepare()) {
             if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Attempting to execute query using PDO statement object: " . print_r($criteria->sql, true) . print_r($criteria->bindings, true));
@@ -285,43 +284,59 @@ class xPDOObject {
      * Loads an instance from an associative array.
      *
      * @static
-     * @access protected
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param string $className Name of the class.
-     * @param mixed $criteria A valid primary key, criteria array, or xPDOCriteria instance.
+     * @param mixed $criteria A valid xPDOQuery instance or relation alias.
      * @param array $row The associative array containing the instance data.
      * @return xPDOObject A new xPDOObject derivative representing a data row.
      */
-    protected static function _loadInstance(& $xpdo, $className, $criteria, $row) {
+    public static function _loadInstance(& $xpdo, $className, $criteria, $row) {
         $rowPrefix= '';
         if (is_object($criteria) && $criteria instanceof xPDOQuery) {
             $alias = $criteria->getAlias();
             $actualClass = $criteria->getClass();
+        } elseif (is_string($criteria) && !empty($criteria)) {
+            $alias = $criteria;
+            $actualClass = $className;
         } else {
             $alias = $className;
             $actualClass= $className;
         }
-        if (isset ($row[$className . '_class_key'])) {
-            $actualClass= $row[$className . '_class_key'];
+        if (isset($row["{$className}_class_key"])) {
+            $actualClass= $row["{$className}_class_key"];
             $rowPrefix= $className . '_';
         }
-        elseif (isset ($row[$alias . '_class_key'])) {
-            $actualClass= $row[$alias . '_class_key'];
+        elseif (isset ($row["{$alias}_class_key"])) {
+            $actualClass= $row["{$alias}_class_key"];
             $rowPrefix= $alias . '_';
         }
         elseif (isset ($row['class_key'])) {
             $actualClass= $row['class_key'];
         }
-        elseif (strpos(strtolower(key($row)), strtolower($alias . '_')) === 0) {
-            $rowPrefix= $alias . '_';
-        }
-        elseif (strpos(strtolower(key($row)), strtolower($className . '_')) === 0) {
-            $rowPrefix= $className . '_';
-        }
         $instance= $xpdo->newObject($actualClass);
-        if (!$instance instanceof $className) {
-            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Instantiated a derived class {$actualClass} that is not a subclass of the requested class {$className}");
-        } elseif ($instance instanceof xPDOObject) {
+        if (is_object($instance) && $instance instanceof xPDOObject) {
+            if (strpos(strtolower(key($row)), strtolower($alias . '_')) === 0) {
+                $rowPrefix= $alias . '_';
+            }
+            elseif (strpos(strtolower(key($row)), strtolower($className . '_')) === 0) {
+                $rowPrefix= $className . '_';
+            }
+            else {
+                $pk = $xpdo->getPK($actualClass);
+                if (is_array($pk)) $pk = reset($pk);
+                if (isset($row["{$alias}_{$pk}"])) {
+                    $rowPrefix= $alias . '_';
+                }
+                elseif ($actualClass !== $className && $actualClass !== $alias && isset($row["{$actualClass}_{$pk}"])) {
+                    $rowPrefix= $actualClass . '_';
+                }
+                elseif ($className !== $alias && isset($row["{$className}_{$pk}"])) {
+                    $rowPrefix= $className . '_';
+                }
+            }
+            if (!$instance instanceof $className) {
+                $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Instantiated a derived class {$actualClass} that is not a subclass of the requested class {$className}");
+            }
             $instance->_lazy= array_keys($instance->_fields);
             $instance->fromArray($row, $rowPrefix, true, true);
             $instance->_dirty= array ();
@@ -334,7 +349,6 @@ class xPDOObject {
      * Responsible for loading an instance into a collection.
      *
      * @static
-     * @access protected
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param array &$objCollection The collection to load the instance into.
      * @param string $className Name of the class.
@@ -342,7 +356,7 @@ class xPDOObject {
      * @param boolean|integer $cacheFlag Indicates if the objects should be cached and
      * optionally, by specifying an integer value, for how many seconds.
      */
-    protected static function _loadCollectionInstance(xPDO & $xpdo, array & $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag=true) {
+    public static function _loadCollectionInstance(xPDO & $xpdo, array & $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag=true) {
         $loaded = false;
         if ($obj= xPDOObject :: _loadInstance($xpdo, $className, $criteria, $row)) {
             if (($cacheKey= $obj->getPrimaryKey()) && !$obj->isLazy()) {
@@ -386,14 +400,12 @@ class xPDOObject {
     public static function load(xPDO & $xpdo, $className, $criteria, $cacheFlag= true) {
         $instance= null;
         $fromCache= false;
-        $sql= '';
         if ($className= $xpdo->loadClass($className)) {
-            $actualClass= $className;
-            $bindings= array ();
             if (!is_object($criteria)) {
                 $criteria= $xpdo->getCriteria($className, $criteria, $cacheFlag);
             }
             if (is_object($criteria)) {
+                $criteria = $xpdo->addDerivativeCriteria($className, $criteria);
                 $row= null;
                 if ($xpdo->_cacheEnabled && $criteria->cacheFlag && $cacheFlag) {
                     $row= $xpdo->fromCache($criteria, $className);
@@ -413,7 +425,7 @@ class xPDOObject {
                     if (is_object($instance)) {
                         if (!$fromCache && $cacheFlag && $xpdo->_cacheEnabled) {
                             $xpdo->toCache($criteria, $instance, $cacheFlag);
-                            if ($xpdo->getOption(xPDO::OPT_CACHE_DB_OBJECTS_BY_PK) && ($cacheKey= $obj->getPrimaryKey()) && !$instance->isLazy()) {
+                            if ($xpdo->getOption(xPDO::OPT_CACHE_DB_OBJECTS_BY_PK) && ($cacheKey= $instance->getPrimaryKey()) && !$instance->isLazy()) {
                                 $pkCriteria = $xpdo->newQuery($className, $cacheKey, $cacheFlag);
                                 $xpdo->toCache($pkCriteria, $instance, $cacheFlag);
                             }
@@ -451,6 +463,9 @@ class xPDOObject {
         $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
         if (!is_object($criteria)) {
             $criteria= $xpdo->getCriteria($className, $criteria, $cacheFlag);
+        }
+        if (is_object($criteria)) {
+            $criteria = $xpdo->addDerivativeCriteria($className, $criteria);
         }
         if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
             $rows= $xpdo->fromCache($criteria);
@@ -496,12 +511,13 @@ class xPDOObject {
     public static function loadCollectionGraph(xPDO & $xpdo, $className, $graph, $criteria, $cacheFlag) {
         $objCollection = array();
         if ($query= $xpdo->newQuery($className, $criteria, $cacheFlag)) {
+            $query = $xpdo->addDerivativeCriteria($className, $query);
             $query->bindGraph($graph);
             $rows = array();
             $fromCache = false;
             $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
             if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
-                $rows= $xpdo->fromCache($criteria);
+                $rows= $xpdo->fromCache($query);
                 $fromCache = !empty($rows);
             }
             if (!$fromCache) {
@@ -669,7 +685,7 @@ class xPDOObject {
      */
     public function set($k, $v= null, $vType= '') {
         $set= false;
-        $callback= null;
+        $callback= '';
         $callable= !empty($vType) && is_callable($vType, false, $callback) ? true : false;
         $oldValue= null;
         if (is_string($k) && !empty($k)) {
@@ -703,7 +719,7 @@ class xPDOObject {
                                 case 'timestamp' :
                                 case 'datetime' :
                                     $ts= false;
-                                    if (strtolower($dbtype) == 'int' || strtolower($dbtype) == 'integer') {
+                                    if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
                                             $ts= (integer) $v;
                                         } else {
@@ -732,7 +748,7 @@ class xPDOObject {
                                     }
                                     break;
                                 case 'date' :
-                                    if (strtolower($dbtype) == 'int' || strtolower($dbtype) == 'integer') {
+                                    if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
                                             $ts= (integer) $v;
                                         } else {
@@ -896,7 +912,7 @@ class xPDOObject {
                             break;
                         case 'timestamp' :
                         case 'datetime' :
-                            if ($dbType == 'int' || $dbType == 'integer' || $dbType == 'INT' || $dbType == 'INTEGER') {
+                            if (preg_match('/int/i', $dbType)) {
                                 $ts= intval($value);
                             } elseif (in_array($value, $this->xpdo->driver->_currentTimestamps)) {
                                 $ts= time();
@@ -1084,7 +1100,7 @@ class xPDOObject {
                 $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Foreign key definition for class {$obj->class}, alias {$obj->_alias} not found, or cardinality is not 'one'.");
             }
         } else {
-            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Attempt to add an object to a field ({$k}) that is not defined as a foreign key");
+            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Attempt to add a non-object to a relation with alias ({$alias})");
         }
         if (!$added) {
             $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not add related object! " . (is_object($obj) ? print_r($obj->toArray(), true) : ''));
@@ -1217,7 +1233,7 @@ class xPDOObject {
                     $this->_fields[$_k]= strftime('%Y-%m-%d');
                     continue;
                 }
-                elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && substr(strtolower($this->_fieldMeta[$_k]['dbtype']), 0, 3) == 'int') {
+                elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
                     $fieldType= PDO::PARAM_INT;
                 }
                 elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json'))) {
@@ -1248,7 +1264,7 @@ class xPDOObject {
                             if ($iteration) {
                                 $where .= " AND ";
                             }
-                            $where .= $this->xpdo->escape($_k) . " = :{$k}";
+                            $where .= $this->xpdo->escape($k) . " = :{$k}";
                             $bindings[":{$k}"]['value']= $this->_fields[$k];
                             $bindings[":{$k}"]['type']= $vt;
                             $iteration++;
@@ -1264,7 +1280,7 @@ class xPDOObject {
                         $where= $this->xpdo->escape($pkn) . ' = :' . $pkn;
                     }
                     if (!empty ($updateSql)) {
-                        $sql= "UPDATE {$this->_table} SET " . implode(',', $updateSql) . " WHERE {$where} LIMIT 1";
+                        $sql= "UPDATE {$this->_table} SET " . implode(',', $updateSql) . " WHERE {$where}";
                     }
                 }
             }
@@ -1874,8 +1890,12 @@ class xPDOObject {
         } else {
             $fkMeta= $this->getFKDefinition($alias);
             if ($fkMeta) {
+                $relationCriteria = array($fkMeta['foreign'] => $this->get($fkMeta['local']));
                 if ($criteria === null) {
-                    $criteria= array ($fkMeta['foreign'] => $this->get($fkMeta['local']));
+                    $criteria= $relationCriteria;
+                } else {
+                    $criteria= $this->xpdo->newQuery($fkMeta['class'], $criteria);
+                    $criteria->andCondition($relationCriteria);
                 }
                 if ($collection= $this->xpdo->getCollection($fkMeta['class'], $criteria, $cacheFlag)) {
                     $this->_relatedObjects[$alias]= array_merge($this->_relatedObjects[$alias], $collection);

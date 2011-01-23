@@ -12,6 +12,7 @@ $start = $modx->getOption('start',$scriptProperties,0);
 $limit = $modx->getOption('limit',$scriptProperties,10);
 $sort = $modx->getOption('sort',$scriptProperties,'');
 $dir = $modx->getOption('dir',$scriptProperties,'ASC');
+$query = $modx->getOption('query',$scriptProperties,'');
 
 /* build query */
 $c = $modx->newQuery('modAccessPermission');
@@ -19,10 +20,15 @@ $c->select(array(
     'modAccessPermission.id',
     'modAccessPermission.name',
     'modAccessPermission.description',
-    'Policy.lexicon',
+    'Template.lexicon',
 ));
-$c->leftJoin('modAccessPolicy','Policy');
+$c->leftJoin('modAccessPolicyTemplate','Template');
 $c->query['DISTINCT'] = 'DISTINCT';
+if (!empty($query)) {
+    $c->where(array(
+        'modAccessPermission.name:LIKE' => '%'.$query.'%',
+    ));
+}
 $count = $modx->getCount('modAccessPermission',$c);
 $c->groupby('modAccessPermission.name');
 $c->sortby('modAccessPermission.name','ASC');
@@ -39,9 +45,9 @@ foreach ($permissions as $permission) {
     $lexicon = $permission->get('lexicon');
     if (!empty($lexicon)) {
         if (strpos($lexicon,':') !== false) {
-            $modx->lexicon->load('en:'.$lexicon);
+            $modx->lexicon->load($lexicon);
         } else {
-            $modx->lexicon->load('en:core:'.$lexicon);
+            $modx->lexicon->load('core:'.$lexicon);
         }
         $desc = $modx->lexicon($desc);
     }

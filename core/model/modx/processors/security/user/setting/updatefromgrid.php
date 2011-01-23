@@ -25,7 +25,8 @@ $setting = $modx->getObject('modUserSetting',array(
 ));
 if (empty($setting)) return $modx->error->failure($modx->lexicon('setting_err_nf'));
 
-$setting->set('value',$_DATA['value']);
+$setting->set('key',$_DATA['key']);
+$setting->fromArray($_DATA);
 
 /* save setting */
 if ($setting->save() == false) {

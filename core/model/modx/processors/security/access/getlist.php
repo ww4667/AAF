@@ -17,9 +17,8 @@
  * @package modx
  * @subpackage processors.security.access
  */
-$modx->lexicon->load('access');
-
 if (!$modx->hasPermission('access_permissions')) return $modx->error->failure($modx->lexicon('permission_denied'));
+$modx->lexicon->load('access');
 
 if (empty($scriptProperties['type'])) {
     return $modx->error->failure($modx->lexicon('access_type_err_ns'));
@@ -62,6 +61,8 @@ $data = array();
 foreach ($collection as $key => $object) {
     $principal = $modx->getObject($object->get('principal_class'), $object->get('principal'));
     if (!$principal) $principal = $modx->newObject($object->get('principal_class'), array('name' => '(anonymous)'));
+    $policyName = !empty($object->Policy) ? $object->Policy->get('name') : $modx->lexicon('no_policy_option');
+
     $objdata= array(
         'id' => $object->get('id'),
         'target' => $object->get('target'),
@@ -71,23 +72,17 @@ foreach ($collection as $key => $object) {
         'principal_name' => $principal->get('name'),
         'authority' => $object->get('authority'),
         'policy' => $object->get('policy'),
-        'policy_name' => $object->Policy->get('name'),
+        'policy_name' => $policyName,
     );
     if (isset($object->_fieldMeta['context_key'])) {
         $objdata['context_key']= $object->get('context_key');
     }
+    $cls = '';
+    if (($object->get('target') == 'mgr') && $principal->get('name') == 'Administrator' && $policyName == 'Administrator') {} else {
+        $cls .= 'pedit premove';
+    }
 
-    $objdata['menu'] = array(
-        array(
-            'text' => $modx->lexicon('edit'),
-            'handler' => 'this.editAcl',
-        ),
-        '-',
-        array(
-            'text' => $modx->lexicon('remove'),
-            'handler' => 'this.removeAcl',
-        ),
-    );
+    $objdata['cls'] = $cls;
     $data[] = $objdata;
 }
 return $this->outputArray($data);

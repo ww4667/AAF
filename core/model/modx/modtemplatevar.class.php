@@ -80,7 +80,7 @@ class modTemplateVar extends modElement {
                 'cacheFlag' => $cacheFlag,
             ));
         }
-        
+
         $removed = parent :: remove($ancestors);
 
         if ($removed && $this->xpdo instanceof modX) {
@@ -110,15 +110,15 @@ class modTemplateVar extends modElement {
 
             if (is_string($this->_output) && !empty ($this->_output)) {
                 /* turn the processed properties into placeholders */
-                $restore = $this->toPlaceholders($this->_properties);
+                $scope = $this->xpdo->toPlaceholders($this->_properties, '', '.', true);
 
                 /* collect element tags in the content and process them */
                 $maxIterations= intval($this->xpdo->getOption('parser_max_iterations',null,10));
                 $this->xpdo->parser->processElementTags($this->_tag, $this->_output, false, false, '[[', ']]', array(), $maxIterations);
 
                 /* remove the placeholders set from the properties of this element and restore global values */
-                $this->xpdo->unsetPlaceholders(array_keys($this->_properties));
-                if ($restore) $this->xpdo->toPlaceholders($restore);
+                if (isset($scope['keys'])) $this->xpdo->unsetPlaceholders($scope['keys']);
+                if (isset($scope['restore'])) $this->xpdo->toPlaceholders($scope['restore']);
             }
 
             /* apply output filtering */
@@ -245,7 +245,6 @@ class modTemplateVar extends modElement {
         if ($paramstring= $this->get('display_params')) {
             $cp= explode("&", $paramstring);
             foreach ($cp as $p => $v) {
-                $v= trim($v);
                 $ar= explode("=", $v);
                 if (is_array($ar) && count($ar) == 2) {
                     $params[$ar[0]]= $this->decodeParamValue($ar[1]);
@@ -286,27 +285,45 @@ class modTemplateVar extends modElement {
         if ($this->xpdo->request && $this->xpdo->user instanceof modUser) {
             $userGroups = $this->xpdo->user->getUserGroups();
             $c = $this->xpdo->newQuery('modActionDom');
-            $c->leftJoin('modAccessActionDom','Access');
+            $c->innerJoin('modFormCustomizationSet','Set');
+            $c->innerJoin('modFormCustomizationProfile','Profile','Set.profile = Profile.id');
+            $c->leftJoin('modFormCustomizationProfileUserGroup','ProfileUserGroup','Profile.id = ProfileUserGroup.profile');
+            $c->leftJoin('modFormCustomizationProfile','UGProfile','UGProfile.id = ProfileUserGroup.profile');
             $c->where(array(
                 array(
                     '(`modActionDom`.`rule` = "tvDefault"
                    OR `modActionDom`.`rule` = "tvVisible"
                    OR `modActionDom`.`rule` = "tvTitle")'
                 ),
-                '"tv'.$this->get('id').'" IN (`name`)',
-                'modActionDom.active' => true,
+                '"tv'.$this->get('id').'" IN ('.$this->xpdo->escape('modActionDom').'.'.$this->xpdo->escape('name').')',
+                'Set.active' => true,
+                'Profile.active' => true,
             ));
-            $c->andCondition(array(
-                '((`Access`.`principal_class` = "modUserGroup"
-              AND `Access`.`principal` IN ('.implode(',',$userGroups).'))
-               OR `Access`.`principal` IS NULL)',
-            ),null,2);
+            $c->where(array(
+                array(
+                    'ProfileUserGroup.usergroup:IN' => $userGroups,
+                    array(
+                        'OR:ProfileUserGroup.usergroup:IS' => null,
+                        'AND:UGProfile.active:=' => true,
+                    ),
+                ),
+                'OR:ProfileUserGroup.usergroup:=' => null,
+            ),xPDOQuery::SQL_AND,null,2);
+            $c->select(array(
+                'modActionDom.*',
+                'Set.constraint_class',
+                'Set.constraint_field',
+                'Set.constraint',
+                'Set.template',
+            ));
+            $c->sortby('Set.template','ASC');
+            $c->sortby('modActionDom.rank','ASC');
             $domRules = $this->xpdo->getCollection('modActionDom',$c);
             foreach ($domRules as $rule) {
                 switch ($rule->get('rule')) {
                     case 'tvVisible':
                         if ($rule->get('value') == 0) {
-                            return '';
+                            $this->set('type','hidden');
                         }
                         break;
                     case 'tvDefault':
@@ -334,6 +351,7 @@ class modTemplateVar extends modElement {
         $this->set('description',strip_tags($this->get('description')));
 
         $this->xpdo->smarty->assign('tv',$this);
+        $this->xpdo->smarty->assign('ctx',isset($_REQUEST['ctx']) ? $_REQUEST['ctx'] : 'web');
 
         $params= array ();
         if ($paramstring= $this->get('display_params')) {
@@ -354,7 +372,7 @@ class modTemplateVar extends modElement {
 
     /**
      * Gets the correct render given paths and type of render
-     * 
+     *
      * @param array $params The parameters to pass to the render
      * @param mixed $value The value of the TV
      * @param array $paths An array of paths to search
@@ -370,8 +388,17 @@ class modTemplateVar extends modElement {
         $format= $this->get('display');
         $tvtype= $this->get('type');
         /* end backwards compat */
-
+        
         $modx =& $this->xpdo;
+        if (empty($modx->resource)) {
+            if (!empty($resourceId)) {
+                $modx->resource = $modx->getObject('modResource',$resourceId);
+            }
+            if (empty($modx->resource) || empty($resourceId)) {
+                $modx->resource = $modx->newObject('modResource');
+                $modx->resource->set('id',0);
+            }
+        }
 
         $output = '';
         foreach ($paths as $path) {
@@ -441,14 +468,14 @@ class modTemplateVar extends modElement {
      * @return string The decoded string.
      */
     public function decodeParamValue($s) {
-        $s= str_replace("%3D", '=', $s);
+        $s= str_replace(array("%3D",'&#61;'), '=', $s);
         $s= str_replace("%26", '&', $s);
         return $s;
     }
 
     /**
      * Returns an array of display params for this TV
-     * 
+     *
      * @return array The processed settings
      */
     public function getDisplayParams() {
@@ -526,7 +553,7 @@ class modTemplateVar extends modElement {
 
     /**
      * Parses the binding data from a value
-     * 
+     *
      * @param mixed $value The value to parse
      * @return array An array of cmd and param for the binding
      */
@@ -555,6 +582,15 @@ class modTemplateVar extends modElement {
         if (empty($bdata['cmd'])) return $value;
 
         $modx =& $this->xpdo;
+        if (empty($modx->resource)) {
+            if (!empty($resourceId)) {
+                $modx->resource = $modx->getObject('modResource',$resourceId);
+            }
+            if (empty($modx->resource) || empty($resourceId)) {
+                $modx->resource = $modx->newObject('modResource');
+                $modx->resource->set('id',0);
+            }
+        }
         $cmd = $bdata['cmd'];
         $param = !empty($bdata['param']) ? $bdata['param'] : null;
         switch ($cmd) {
@@ -625,7 +661,7 @@ class modTemplateVar extends modElement {
                 if (!is_dir($path)) { break; }
 
                 $files = array();
-                $invalid = array('.','..','.svn','.DS_Store');
+                $invalid = array('.','..','.svn','.git','.DS_Store');
                 foreach (new DirectoryIterator($path) as $file) {
                     if (!$file->isReadable()) continue;
                     $basename = $file->getFilename();
@@ -683,7 +719,7 @@ class modTemplateVar extends modElement {
             $resource =& $this->xpdo->resource;
         }
         if (!$resource) return $output;
-        
+
         $currentResource = $resource;
         while ($currentResource->get('parent') != 0) {
             $currentResource = $this->xpdo->getObject('modResource',array('id' => $currentResource->get('parent')));

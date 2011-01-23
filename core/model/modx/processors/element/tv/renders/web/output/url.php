@@ -3,11 +3,17 @@
  * @package modx
  * @subpackage processors.element.tv.renders.mgr.output
  */
+if (empty($value)) return $value;
 
 $value= $this->parseInput($value, "||", "array");
 for ($i = 0; $i < count($value); $i++) {
     list($name,$url) = is_array($value[$i]) ? $value[$i]: explode("==",$value[$i]);
     if (!$url) $url = $name;
+
+    /* handle types that return IDs of resources */
+    $rid =intval($url);
+    if (!empty($rid)) { $url = '[[~'.$rid.']]'; }
+
     if ($url) {
         if($o) $o.='<br />';
         $attributes = '';
