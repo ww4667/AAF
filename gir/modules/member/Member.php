@@ -33,11 +33,16 @@ class Member extends User {
 	}
 	
 	public function JoinUser( $user_id ) {
-		return $this->_joinUser;
+		return $this->_joinUser( $user_id );
 	}
 	
 	private function _joinUser( $user_id ) {
-		;
+		$this->AddJoin( $user_id, "join_user" );
 	}
+    
+    public function viewMembers(){
+        $items = $this->GetAllItemsObj();
+        return $items;
+    }
 }
 ?>

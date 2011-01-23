@@ -64,6 +64,13 @@ switch($method){
     
  
   break;
+  case 'view-members':
+    $m = new Member();
+        
+    $PAGE_BODY = "view_members.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");  
+  break;
 	
 }
 

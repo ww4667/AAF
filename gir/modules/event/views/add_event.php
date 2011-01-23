@@ -2,23 +2,21 @@
 <?php
 //    phpinfo();
 
-$op = $j->getObjectProperties();
+$op = $e->getObjectProperties();
 
 if (!isset($_POST) || empty($_POST)){
 ?>
-<form action="" method = "post" class = "form"id="submit_job_form" >
+<form action="" method = "post" class = "form"id="submit_event_form" >
 <ol>
 <?
 foreach($op as $p){
     switch($p["field"]){
-        case "description":
+        case "event_details":
           ?>
           <li><label><?= $p["label"] ?></label>
           <textarea id="<?= $p["id"] ?>" cols="55" class = "required" rows="7" name="<?= $p["field"] ?>"></textarea>
           </li>
           <?
-            break;
-        case "approved":
             break;
         default:
           ?>
@@ -33,16 +31,9 @@ foreach($op as $p){
 }
 
 ?>
-	<li id="recaptcha">
-		<script>var RecaptchaOptions = { theme: 'white' };</script>
-		<? 
-		$publickey="6LcPowkAAAAAAO81P8YHWUZLyalPKk3_--anwzF2";
-		echo recaptcha_get_html($publickey);
-		?>
-	</li>
      <li>
         <label>&nbsp;</label>
-        <input class="submit_btn" type="image" value="Send Question" src="/resources/images/submit.png" alt="Submit Job" />
+        <input class="submit_btn" type="image" value="Send Event" src="/resources/images/submit.png" alt="Submit Event" />
      </li>
 </ol>
 </form>
@@ -52,6 +43,6 @@ foreach($op as $p){
 
 <script type="text/javascript">
     $(document).ready(function() { 
-        $("#submit_job_form").validate();
+        $("#submit_event_form").validate();
     });
 </script>

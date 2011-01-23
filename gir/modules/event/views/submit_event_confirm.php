@@ -1,0 +1,1 @@
+<h2>Thanks for submitting an event posting</h2>

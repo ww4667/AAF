@@ -12,9 +12,8 @@ class Member_Application extends Crud {
                                           array("type"=>"text","label"=>"Applicant First Name","field"=>"first_name"),
                                           array("type"=>"text","label"=>"Applicant Last Name","field"=>"last_name"),
                                           array("type"=>"text","label"=>"Applicant Email","field"=>"email"),
-                                          array("type"=>"number","label"=>"Approved","field"=>"approved"),
-                                          array("type"=>"date","label"=>"Created Timestamp","field"=>"created_ts")
-											);
+                                          array("type"=>"number","label"=>"Approved","field"=>"approved")
+                                          );
 	function __construct(){
 		parent::__construct();
 		foreach($this->_OBJECT_PROPERTIES as $p) {
@@ -25,5 +24,16 @@ class Member_Application extends Crud {
 	public function getObjectProperties() {
 		return $this->_OBJECT_PROPERTIES;
 	}
+    
+    public function viewApplications(){
+        $items = $this->GetAllItemsObj();
+        $items = $this->QueryObjectItems("approved = ''");
+        return $items;
+    }
+    public function getApplicationData($app_id){
+        $theApp = $this->GetItemObj( $app_id);
+        return $theApp;
+                   
+    }
 }
 ?>
