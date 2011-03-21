@@ -30,9 +30,11 @@ MODx.onUserFormRender = "'.$onUserFormRender.'";
 </script>');
 
 /* register JS scripts */
+$modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/util/datetime.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/core/modx.orm.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/security/modx.grid.user.group.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/security/modx.panel.user.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/sections/security/user/create.js');
 
+$this->checkFormCustomizationRules();
 return $modx->smarty->fetch('security/user/create.tpl');

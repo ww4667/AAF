@@ -86,7 +86,7 @@ MODx.panel.Template = function(config) {
                 ,name: 'clearCache'
                 ,id: 'modx-template-clear-cache'
                 ,inputValue: 1
-                ,checked: config.record.clearCache || true
+                ,checked: Ext.isDefined(config.record.clearCache) || true
             },{
                 html: MODx.onTempFormRender
                 ,border: false
@@ -138,7 +138,6 @@ MODx.panel.Template = function(config) {
         }
     });
     MODx.panel.Template.superclass.constructor.call(this,config);
-    setTimeout("Ext.getCmp('modx-element-tree').expand();",1000);
 };
 Ext.extend(MODx.panel.Template,MODx.FormPanel,{
     initialized: false
@@ -159,6 +158,7 @@ Ext.extend(MODx.panel.Template,MODx.FormPanel,{
         if (MODx.onLoadEditor) { MODx.onLoadEditor(this); }
         this.clearDirty();
         this.initialized = true;
+        MODx.fireEvent('ready');
         return true;
     }
     ,beforeSubmit: function(o) {
@@ -179,9 +179,11 @@ Ext.extend(MODx.panel.Template,MODx.FormPanel,{
         this.getForm().setValues(r.result.object);
         
         var t = Ext.getCmp('modx-element-tree');
-        var c = Ext.getCmp('modx-template-category').getValue();
-        var u = c != '' && c != null ? 'n_template_category_'+c : 'n_type_template'; 
-        t.refreshNode(u,true);
+        if (t) {
+            var c = Ext.getCmp('modx-template-category').getValue();
+            var u = c != '' && c != null ? 'n_template_category_'+c : 'n_type_template';
+            t.refreshNode(u,true);
+        }
     }
     ,changeEditor: function() {
         this.cleanupEditor();

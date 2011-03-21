@@ -104,7 +104,7 @@ MODx.panel.TV = function(config) {
                 ,name: 'clearCache'
                 ,id: 'modx-tv-clear-cache'
                 ,inputValue: 1
-                ,checked: config.record.clearCache || true
+                ,checked: Ext.isDefined(config.record.clearCache) || true
             },{
                 html: onTVFormRender
                 ,border: false
@@ -238,6 +238,7 @@ Ext.extend(MODx.panel.TV,MODx.FormPanel,{
         if (MODx.onLoadEditor) { MODx.onLoadEditor(this); }
         this.clearDirty();
         this.initialized = true;
+        MODx.fireEvent('ready');
         return true;
     }
     
@@ -262,9 +263,11 @@ Ext.extend(MODx.panel.TV,MODx.FormPanel,{
         this.getForm().setValues(r.result.object);
         
         var t = Ext.getCmp('modx-element-tree');
-        var c = Ext.getCmp('modx-tv-category').getValue();
-        var u = c != '' && c != null ? 'n_tv_category_'+c : 'n_type_tv'; 
-        t.refreshNode(u,true);
+        if (t) {
+            var c = Ext.getCmp('modx-tv-category').getValue();
+            var u = c != '' && c != null ? 'n_tv_category_'+c : 'n_type_tv';
+            t.refreshNode(u,true);
+        }
     }
     
     ,showParameters: function(cb,rc,i) {

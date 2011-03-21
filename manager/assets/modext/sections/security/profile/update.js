@@ -37,10 +37,12 @@ MODx.panel.Profile = function(config) {
             ,anchor: '100%'
         },MODx.getPageStructure([{
             xtype: 'modx-panel-profile-update'
+            ,id: 'modx-panel-profile-update'
             ,user: config.user
             ,preventRender: true
         },{
             xtype: 'modx-panel-profile-password-change'
+            ,id: 'modx-panel-profile-password-change'
             ,user: config.user
             ,preventRender: true
         },{
@@ -60,6 +62,7 @@ MODx.panel.Profile = function(config) {
         }],{
             border: true
             ,defaults: { bodyStyle: 'padding: 15px; '}
+            ,id: 'modx-panel-profile-tabs'
         })]
     });
     MODx.panel.Profile.superclass.constructor.call(this,config);

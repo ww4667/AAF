@@ -6,6 +6,7 @@
 				<!--BODY CONTENT START-->
 				 <h3>Welcome <?= ucwords($object['fname']) ?>,</h3>
 				 <p>We've approved your membership application. Please visit the website to setup your password and login.</p>
+				 <p>Please use following link to setup your account - <a href="http://aaf.slashwebstudios.com/login.html?reset_key=<?= $object["password_reset"] ?>">http://aaf.slashwebstudios.com/login.html?reset_key=<?= $object["password_reset"] ?></a></p>
 				 <p>Should you have any questions, comments, or suggestions, don't hesitate to <a href="http://www.aafdsm.com/contact.html">contact us</a>.</p>
 				<!--BODY CONTENT END-->
 				</td>

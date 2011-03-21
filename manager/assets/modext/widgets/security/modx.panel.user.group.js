@@ -180,6 +180,7 @@ Ext.extend(MODx.panel.UserGroup,MODx.FormPanel,{
                     Ext.get('modx-user-group-header').update('<h2>'+_('user_group')+': '+r.object.name+'</h2>');
                                         
                     this.fireEvent('ready',r.object);
+                    MODx.fireEvent('ready');
                 },scope:this}
             }
         });
@@ -347,6 +348,7 @@ MODx.window.AddUserToUserGroup = function(config) {
             ,xtype: 'modx-combo-user'
             ,editable: false
             ,allowBlank: false
+            ,anchor: '90%'
         },{
             fieldLabel: _('role')
             ,name: 'role'
@@ -354,6 +356,7 @@ MODx.window.AddUserToUserGroup = function(config) {
             ,id: 'modx-auug-role'
             ,xtype: 'modx-combo-role'
             ,allowBlank: false
+            ,anchor: '90%'
         },{
             name: 'usergroup'
             ,xtype: 'hidden'

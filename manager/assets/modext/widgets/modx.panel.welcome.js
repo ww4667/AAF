@@ -26,7 +26,7 @@ MODx.panel.Welcome = function(config) {
             xtype: 'portal'
             ,id: 'modx-welcome-portal'
             ,items: [{
-                columnWidth: .47
+                columnWidth: .48
                 ,id: 'modx-welcome-col-left'
                 ,defaults: {
                     height: 300
@@ -57,11 +57,11 @@ MODx.panel.Welcome = function(config) {
                     title: _('online')
                     ,contentEl: 'modx-online'
                     ,collapsed: true
-					,cls: 'x-panel-header x-portal-space'
+                    ,cls: 'x-panel-header x-portal-space'
                     ,hidden: MODx.hasViewUser == 1 ? false : true
                 }]
             },{
-                columnWidth: .47
+                columnWidth: .48
                 ,id: 'modx-welcome-col-right'
                 ,defaults: {
                     height: 300
@@ -72,19 +72,20 @@ MODx.panel.Welcome = function(config) {
                 ,items: [{
                     title: _('security_notices')
                     ,contentEl: 'modx-security'
-					,cls: 'x-panel-header x-portal-space'
+                    ,cls: 'x-panel-header x-portal-space'
                     ,hidden: config.securityEnabled ? false : true
                 },{
                     title: _('info')
                     ,contentEl: 'modx-info'
-					,cls: 'x-panel-header x-panel-footer x-portal-space'
-					,style: ''
+                    ,cls: 'x-panel-header x-panel-footer x-portal-space'
+                    ,style: ''
                     ,collapsed: true
                 }]
             }]
         }]
     });
     MODx.panel.Welcome.superclass.constructor.call(this,config);
+    MODx.fireEvent('ready');
 };
 Ext.extend(MODx.panel.Welcome,MODx.FormPanel);
 Ext.reg('modx-panel-welcome',MODx.panel.Welcome);

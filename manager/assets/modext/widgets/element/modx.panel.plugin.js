@@ -92,7 +92,7 @@ MODx.panel.Plugin = function(config) {
                 ,name: 'clearCache'
                 ,id: 'modx-plugin-clear-cache'
                 ,inputValue: 1
-                ,checked: config.record.clearCache || true
+                ,checked: Ext.isDefined(config.record.clearCache) || true
             },{
                 html: MODx.onPluginFormRender
                 ,border: false
@@ -160,6 +160,7 @@ Ext.extend(MODx.panel.Plugin,MODx.FormPanel,{
         this.fireEvent('ready',this.config.record);
         if (MODx.onLoadEditor) { MODx.onLoadEditor(this); }
         this.clearDirty();
+        MODx.fireEvent('ready');
         this.initialized = true;
     }
     ,beforeSubmit: function(o) {
@@ -180,9 +181,11 @@ Ext.extend(MODx.panel.Plugin,MODx.FormPanel,{
         this.getForm().setValues(o.result.object);
         
         var t = Ext.getCmp('modx-element-tree');
-        var c = Ext.getCmp('modx-plugin-category').getValue();
-        var u = c != '' && c != null ? 'n_plugin_category_'+c : 'n_type_plugin'; 
-        t.refreshNode(u,true);
+        if (t) {
+            var c = Ext.getCmp('modx-plugin-category').getValue();
+            var u = c != '' && c != null ? 'n_plugin_category_'+c : 'n_type_plugin';
+            t.refreshNode(u,true);
+        }
     }    
     ,changeEditor: function() {
         this.cleanupEditor();

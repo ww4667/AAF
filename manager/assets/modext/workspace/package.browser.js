@@ -76,6 +76,7 @@ MODx.panel.PackageBrowser = function(config) {
             },{
                 id: 'modx-package-browser-thumb-view'
                 ,border: false
+                ,hidden: true
                 ,autoHeight: true
                 ,layout: 'column'
                 ,items: [{
@@ -270,6 +271,7 @@ Ext.extend(MODx.tree.PackageBrowserTree,MODx.tree.Tree,{
             }
         });
         g.getBottomToolbar().changePage(1);
+        Ext.getCmp('modx-combo-package-browser-sort').setWidth(300);
         Ext.getCmp('modx-pbr-search-fld').setValue('');
         return true;
     }
@@ -280,8 +282,9 @@ Ext.extend(MODx.tree.PackageBrowserTree,MODx.tree.Tree,{
             m = this.setupMask();
         }
         m.show();
+        MODx.provider = p;
         this.provider = p;
-        this.loadDataFromProvider();
+        this.renderProviderInfo();
     }
     
     ,loadTpls: function() {
@@ -313,15 +316,15 @@ Ext.extend(MODx.tree.PackageBrowserTree,MODx.tree.Tree,{
                 ,'<div class="pbr-provider-box"><h3>'+_('most_popular')+'</h3>'
                 ,'<tpl for="topdownloaded">'
                     ,'<p>{#}. '
-                    ,'<tpl if="this.isEmpty(url) == false">{name}</tpl>'
-                    ,'<tpl if="this.isEmpty(url) == true">{name}</tpl>'
+                    ,'<tpl if="this.isEmpty(url) == false"><a href="#" onclick="MODx.searchPackage(\'{name}\');">{name}</a></tpl>'
+                    ,'<tpl if="this.isEmpty(url) == true"><a href="#" onclick="MODx.searchPackage(\'{name}\');">{name}</a></tpl>'
                     ,' - {downloads}</p>'
                 ,'</tpl></div>'
                 ,'<div class="pbr-provider-box"><h3>'+_('newest_additions')+'</h3>'
                 ,'<tpl for="newest">'
                     ,'<p>{#}. '
-                    ,'<tpl if="this.isEmpty(url) == false">{name}</tpl>'
-                    ,'<tpl if="this.isEmpty(url) == true">{name}</tpl>'
+                    ,'<tpl if="this.isEmpty(url) == false"><a href="#" onclick="MODx.searchPackage(\'{package_name}\');">{name}</a></tpl>'
+                    ,'<tpl if="this.isEmpty(url) == true"><a href="#" onclick="MODx.searchPackage(\'{package_name}\');">{name}</a></tpl>'
                     ,' - {releasedon}</p>'
                 ,'</tpl></div>'
                 ,'<br class="clear" /></div>'
@@ -378,12 +381,12 @@ MODx.grid.PackageBrowserGrid = function(config) {
         ,url: MODx.config.connectors_url+'workspace/packages-rest.php'
         ,baseParams: {
             action: 'getList'
-            //,provider: MODx.provider
         }
         ,paging: true
         ,pageSize: 10
         ,plugins: [this.action,this.exp]
         ,hideMode: 'offsets'
+        ,showPerPage: false
         ,columns: [this.exp,{
             header: _('name')
             ,dataIndex: 'name'
@@ -412,18 +415,8 @@ MODx.grid.PackageBrowserGrid = function(config) {
             ,width: 300
             ,hideMode: 'offsets'
             ,listeners: {
-                'select': {fn:function(cb,rec,idx) {
-                    var v = cb.getValue();
-                    var s = this.getStore();
-                    s.removeAll();
-                    s.setBaseParam('sorter',v);
-                    s.load({
-                        params: {
-                            sorter: v
-                        }
-                    });
-                    this.getBottomToolbar().changePage(1);
-                },scope:this}
+                'select': {fn:this.changeSort,scope:this}
+                ,'change': {fn:this.changeSort2,scope:this}
             }
         }]
     });
@@ -467,6 +460,31 @@ Ext.extend(MODx.grid.PackageBrowserGrid,MODx.grid.Grid,{
             ,'</tpl></div>'
         );
         this.detailsTpl.compile();
+    }
+
+    ,changeSort: function(cb,rec,idx) {
+        var v = cb.getValue();
+        var s = this.getStore();
+        s.removeAll();
+        s.setBaseParam('sorter',v);
+        s.load({
+            params: {
+                sorter: v
+            }
+        });
+        this.getBottomToolbar().changePage(1);
+    }
+    ,changeSort2: function(cb,nv,ov) {
+        var v = cb.getValue();
+        var s = this.getStore();
+        s.removeAll();
+        s.setBaseParam('sorter',v);
+        s.load({
+            params: {
+                sorter: v
+            }
+        });
+        this.getBottomToolbar().changePage(1);
     }
     
     ,btnclick: function(g,rec,a,ri,ci) {
@@ -522,8 +540,7 @@ Ext.reg('modx-package-browser-grid',MODx.grid.PackageBrowserGrid);
 MODx.combo.PackageBrowserSort = function(config) {
     config = config || {};
     Ext.applyIf(config,{
-        xtype: 'combo'
-        ,store: new Ext.data.ArrayStore({
+        store: new Ext.data.ArrayStore({
             fields: ['d','v']
             ,data : [['','']
                 ,[_('alphabetically'),'alpha']
@@ -540,7 +557,7 @@ MODx.combo.PackageBrowserSort = function(config) {
         ,editable: false
         ,triggerAction: 'all'
         ,typeAhead: false
-        ,selectOnFocus: true
+        ,selectOnFocus: false
     });
     MODx.combo.PackageBrowserSort.superclass.constructor.call(this,config);
 };
@@ -723,3 +740,12 @@ Ext.extend(MODx.PackageBrowserThumbsView,MODx.DataView,{
     }
 });
 Ext.reg('modx-view-package-browser-thumbs',MODx.PackageBrowserThumbsView);
+
+MODx.searchPackage = function(name) {
+    var f = Ext.getCmp('modx-pbr-search-fld');
+    var t = Ext.getCmp('modx-package-browser-tree');
+    if (f && t) {
+        f.setValue(name);
+        t.search(f,name);
+    }
+};

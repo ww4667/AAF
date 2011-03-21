@@ -44,10 +44,14 @@ class User extends Crud {
 	public function EmailCheck( $email ) {
 		return $this->_emailCheck( $email );
 	}
-	
-	public function ForgotPassword( $email ) {
-		return $this->_forgotPassword( $email );
-	}
+    
+    public function ForgotPassword( $email ) {
+        return $this->_forgotPassword( $email );
+    }
+    
+    public function SetPasswordResetKey( $email ) {
+        return $this->_setPasswordResetKey( $email );
+    }
 	
 	public function ResetPassword( $password, $key ) {
 		return $this->_resetPassword( $password, $key );
@@ -73,6 +77,7 @@ class User extends Crud {
 			$users = array();
 			$users = $u->GetItemsObjByPropertyValue( $propertyName, $username );
 			// prep password first
+			//$u->PTS($users);
 			$salt = $users[0]->salt;
 			$password = $u->SetPassword($password, $salt);
 			if( count($users) > 0 && $users[0]->password == $password ) {
@@ -121,17 +126,32 @@ class User extends Crud {
     }
     
     private function _forgotPassword( $email ) {
-		$email = trim(strtolower($email));
+        $email = trim(strtolower($email));
         // check if email exists
-		$users = $this->GetItemsObjByPropertyValue( 'email', $email );
-		if (!empty($users)) {
-			$user = $users[0];
-			$user->password_reset = sha1(time().'--'.rand(100,10000));
-			$user->UpdateItem();
-//			Mailer::password_reset_email($details);
-		} else {
-			return false;
-		}
+        $users = $this->GetItemsObjByPropertyValue( 'email', $email );
+        if (!empty($users)) {
+            $user = $users[0];
+            $user->password_reset = sha1(time().'--'.rand(100,10000));
+            $user->UpdateItem();
+//          Mailer::password_reset_email($details);
+        } else {
+            return false;
+        }
+    }
+    
+    
+    private function _setPasswordResetKey( $email ) {
+        $email = trim(strtolower($email));
+        // check if email exists
+        $users = $this->GetItemsObjByPropertyValue( 'email', $email );
+        
+        if (!empty($users)) {
+            $user = $users[0];
+            $this->password_reset = sha1(time().'--'.rand(100,10000));
+            $this->UpdateItem();
+        } else {
+            return false;
+        }
     }
     
     private function _getSalt( $email ) {

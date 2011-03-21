@@ -17,3 +17,8 @@ modext.js
 
 .tmp_*
 .project
+.buildpath
+.settings/.jsdtscope
+.settings/com.aptana.editor.php.prefs
+.settings/org.eclipse.wst.jsdt.ui.superType.container
+.settings/org.eclipse.wst.jsdt.ui.superType.name

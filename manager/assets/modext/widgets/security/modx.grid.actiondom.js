@@ -8,9 +8,9 @@ MODx.grid.ActionDom = function(config) {
             ,'action','controller'
             ,'principal','principal_class'
             ,'name','description','xtype','container','rule','value'
-            ,'constraint','constraint_class','constraint_field','active','perm']
+            ,'constraint','constraint_class','constraint_field','active','for_parent','rank','perm']
         ,paging: true
-        ,autosave: false
+        ,autosave: true
         ,sm: this.sm
         ,remoteSort: true
         ,columns: [this.sm,{
@@ -21,49 +21,46 @@ MODx.grid.ActionDom = function(config) {
         },{
             header: _('action')
             ,dataIndex: 'controller'
-            ,width: 250
+            ,width: 200
             ,sortable: true
+            ,editor: { xtype: 'modx-combo-action' }
         },{
             header: _('name')
             ,dataIndex: 'name'
             ,width: 200
             ,sortable: true
+            ,editor: { xtype: 'textfield' }
         },{
             header: _('description')
             ,dataIndex: 'description'
-            ,width: 200
+            ,width: 250
             ,sortable: true
+            ,editor: { xtype: 'textfield' }
         },{
             header: _('rule')
             ,dataIndex: 'rule'
             ,width: 150
             ,sortable: true
-            ,renderer: function(v,c) {
-                var rs = {
-                    'fieldVisible': 'field_visible'
-                    ,'fieldTitle': 'field_label'
-                    ,'fieldDefault': 'field_default'
-                    ,'tabVisible': 'tab_visible'
-                    ,'tabTitle': 'tab_title'
-                    ,'tabNew': 'tab_new'
-                    ,'tvVisible': 'tv_visible'
-                    ,'tvTitle': 'tv_label'
-                    ,'tvDefault': 'tv_default'
-                    ,'tvMove': 'tv_move'
-                };
-                return _(rs[v]) ? _(rs[v]) : v;
-            }
+            ,editor: { xtype: 'modx-combo-rule-type' ,renderer: true }
         },{
             header: _('value')
             ,dataIndex: 'value'
             ,width: 300
             ,sortable: true
+            ,editor: { xtype: 'textfield' }
         },{
             header: _('usergroup')
             ,dataIndex: 'principal'
-            ,width: 200
-            ,editor: { xtype: 'modx-combo-usergroup' ,renderer: true }
-            ,editable: false
+            ,width: 150
+            ,editor: { xtype: 'modx-combo-usergroup' ,renderer: true, baseParams: { action: 'getList', addNone: true }}
+            ,editable: true
+            ,sortable: true
+        },{
+            header: _('rank')
+            ,dataIndex: 'rank'
+            ,width: 70
+            ,editor: { xtype: 'textfield' }
+            ,editable: true
             ,sortable: true
         }]
         ,viewConfig: {
@@ -95,6 +92,53 @@ MODx.grid.ActionDom = function(config) {
                 ,handler: this.removeSelected
                 ,scope: this
             }]
+        },'->',{
+            xtype: 'modx-combo-rule-type'
+            ,name: 'filter_rule_type'
+            ,id: 'modx-adom-filter-rule-type'
+            ,emptyText: _('filter_by_rule_type')
+            ,value: ''
+            ,allowBlank: true
+            ,width: 150
+            ,listeners: {
+                'select': {fn: this.filterByRuleType, scope:this}
+            }
+        },{
+            xtype: 'modx-combo-action'
+            ,name: 'filter_action'
+            ,id: 'modx-adom-filter-action'
+            ,emptyText: _('filter_by_action')
+            ,value: ''
+            ,allowBlank: true
+            ,width: 150
+            ,listeners: {
+                'select': {fn: this.filterByAction, scope:this}
+            }
+        },{
+            xtype: 'textfield'
+            ,name: 'search'
+            ,id: 'modx-adom-search'
+            ,emptyText: _('filter_by_search')
+            ,listeners: {
+                'change': {fn: this.search, scope: this}
+                ,'render': {fn: function(cmp) {
+                    new Ext.KeyMap(cmp.getEl(), {
+                        key: Ext.EventObject.ENTER
+                        ,fn: function() {
+                            this.fireEvent('change',this.getValue());
+                            this.blur();
+                            return true;}
+                        ,scope: cmp
+                    });
+                },scope:this}
+            }
+        },{
+            xtype: 'button'
+            ,id: 'modx-filter-clear'
+            ,text: _('filter_clear')
+            ,listeners: {
+                'click': {fn: this.clearFilter, scope: this}
+            }
         }]
     });
     MODx.grid.ActionDom.superclass.constructor.call(this,config);
@@ -106,37 +150,85 @@ Ext.extend(MODx.grid.ActionDom,MODx.grid.Grid,{
         var p = r.data.perm;
 
         var m = [];
-        if (p.indexOf('pedit') != -1) {
+        if (this.getSelectionModel().getCount() > 1) {
             m.push({
-                text: _('edit')
-                ,handler: this.updateRule
-            },{
-                text: _('duplicate')
-                ,handler: this.duplicateRule
-            },'-');
-            if (r.data.active) {
+                text: _('selected_activate')
+                ,handler: this.activateSelected
+            });
+            m.push({
+                text: _('selected_deactivate')
+                ,handler: this.deactivateSelected
+            });
+            m.push('-');
+            m.push({
+                text: _('selected_remove')
+                ,handler: this.removeSelected
+            });
+        } else {
+            if (p.indexOf('pedit') != -1) {
                 m.push({
-                    text: _('deactivate')
-                    ,handler: this.deactivateRule
-                });
-            } else {
-                m.push({
-                    text: _('activate')
-                    ,handler: this.activateRule
+                    text: _('edit')
+                    ,handler: this.updateRule
+                },{
+                    text: _('duplicate')
+                    ,handler: this.duplicateRule
+                },'-');
+                if (r.data.active) {
+                    m.push({
+                        text: _('deactivate')
+                        ,handler: this.deactivateRule
+                    });
+                } else {
+                    m.push({
+                        text: _('activate')
+                        ,handler: this.activateRule
+                    });
+                }
+            }
+            if (p.indexOf('premove') != -1) {
+                m.push('-',{
+                    text: _('remove')
+                    ,handler: this.confirm.createDelegate(this,['remove','rule_remove_confirm'])
                 });
             }
-        }
-        if (p.indexOf('premove') != -1) {
-            m.push('-',{
-                text: _('remove')
-                ,handler: this.confirm.createDelegate(this,['remove','rule_remove_confirm'])
-            });
         }
         
         if (m.length > 0) {
             this.addContextMenuItem(m);
         }
     }
+
+    ,search: function(tf,newValue,oldValue) {
+        var nv = newValue || tf;
+        this.getStore().baseParams.search = Ext.isEmpty(nv) || Ext.isObject(nv) ? '' : nv;
+        this.getStore().baseParams.controller = '';
+        Ext.getCmp('modx-adom-filter-action').setValue('');
+        this.getBottomToolbar().changePage(1);
+        this.refresh();
+        return true;
+    }
+
+    ,filterByAction: function(cb,rec,ri) {
+        this.getStore().baseParams['controller'] = cb.getValue();
+        this.getBottomToolbar().changePage(1);
+        this.refresh();
+    }
+    ,filterByRuleType: function(cb,rec,ri) {
+        this.getStore().baseParams['rule'] = cb.getValue();
+        this.getBottomToolbar().changePage(1);
+        this.refresh();
+    }
+    ,clearFilter: function() {        
+    	this.getStore().baseParams = {
+            action: 'getList'
+    	};
+        Ext.getCmp('modx-adom-filter-action').reset();
+        Ext.getCmp('modx-adom-filter-rule-type').reset();
+        Ext.getCmp('modx-adom-search').reset();
+    	this.getBottomToolbar().changePage(1);
+        this.refresh();
+    }
+
     ,updateRule: function(btn,e) {
         var r = this.menu.record;
         r.action_id = r.action;
@@ -264,8 +356,9 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'action_id'
             ,hiddenName: 'action_id'
             ,xtype: 'modx-combo-action'
+            ,baseParams: { action: 'getList' ,showNone: 0 }
             ,id: 'modx-'+this.ident+'-action'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('usergroup')
             ,description: _('usergroup_desc')
@@ -274,7 +367,7 @@ MODx.window.CreateActionDom = function(config) {
             ,xtype: 'modx-combo-usergroup'
             ,baseParams: { action: 'getList' ,addNone: true }
             ,id: 'modx-'+this.ident+'-usergroup'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('description')
@@ -282,7 +375,7 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'description'
             ,id: 'modx-'+this.ident+'-description'
             ,xtype: 'textarea'
-            ,width: 200
+            ,anchor: '90%'
             ,height: 50
             
         },{ html: '<hr />' },{
@@ -291,7 +384,7 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'name'
             ,id: 'modx-'+this.ident+'-name'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('containing_panel')
@@ -299,7 +392,7 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'container'
             ,id: 'modx-'+this.ident+'-container'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('rule')
@@ -307,7 +400,7 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'rule'
             ,id: 'modx-'+this.ident+'-rule'
             ,xtype: 'modx-combo-rule-type'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('value')
@@ -315,7 +408,7 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'value'
             ,id: 'modx-'+this.ident+'-value'
             ,xtype: 'textarea'
-            ,width: 200
+            ,anchor: '90%'
             ,height: 50
             
         },{ html: '<hr />' },{
@@ -324,21 +417,36 @@ MODx.window.CreateActionDom = function(config) {
             ,name: 'constraint_class'
             ,id: 'modx-'+this.ident+'-constraint-class'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('constraint_field')
             ,description: _('constraint_field_desc')
             ,name: 'constraint_field'
             ,id: 'modx-'+this.ident+'-constraint-field'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('constraint')
             ,description: _('constraint_desc')
             ,name: 'constraint'
             ,id: 'modx-'+this.ident+'-constraint'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
+        },{
+            fieldLabel: _('for_parent')
+            ,description: _('for_parent_desc')
+            ,name: 'for_parent'
+            ,id: 'modx-'+this.ident+'-for-parent'
+            ,xtype: 'checkbox'
+            ,value: 1
+            ,checked: false
+        },{ html: '<hr />' },{
+            fieldLabel: _('rank')
+            ,description: _('rank_desc')
+            ,name: 'rank'
+            ,id: 'modx-'+this.ident+'-rank'
+            ,xtype: 'textfield'
+            ,value: 0
         },{
             fieldLabel: _('active')
             ,description: _('active_desc')
@@ -373,8 +481,9 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'action_id'
             ,hiddenName: 'action_id'
             ,xtype: 'modx-combo-action'
+            ,baseParams: { action: 'getList' ,showNone: false }
             ,id: 'modx-'+this.ident+'-action'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('usergroup')
             ,description: _('usergroup_desc')
@@ -383,7 +492,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,xtype: 'modx-combo-usergroup'
             ,baseParams: { action: 'getList' ,addNone: true }
             ,id: 'modx-'+this.ident+'-usergroup'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('description')
@@ -391,7 +500,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'description'
             ,id: 'modx-'+this.ident+'-description'
             ,xtype: 'textarea'
-            ,width: 200
+            ,anchor: '90%'
             ,height: 50
             
         },{ html: '<hr />' },{
@@ -400,7 +509,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'name'
             ,id: 'modx-'+this.ident+'-name'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('containing_panel')
@@ -408,7 +517,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'container'
             ,id: 'modx-'+this.ident+'-container'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('rule')
@@ -416,7 +525,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'rule'
             ,id: 'modx-'+this.ident+'-rule'
             ,xtype: 'modx-combo-rule-type'
-            ,width: 200
+            ,anchor: '90%'
             
         },{
             fieldLabel: _('value')
@@ -424,7 +533,7 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'value'
             ,id: 'modx-'+this.ident+'-value'
             ,xtype: 'textarea'
-            ,width: 200
+            ,anchor: '90%'
             ,height: 50
             
         },{ html: '<hr />' },{
@@ -433,21 +542,36 @@ MODx.window.UpdateActionDom = function(config) {
             ,name: 'constraint_class'
             ,id: 'modx-'+this.ident+'-constraint-class'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('constraint_field')
             ,description: _('constraint_field_desc')
             ,name: 'constraint_field'
             ,id: 'modx-'+this.ident+'-constraint-field'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
         },{
             fieldLabel: _('constraint')
             ,description: _('constraint_desc')
             ,name: 'constraint'
             ,id: 'modx-'+this.ident+'-constraint'
             ,xtype: 'textfield'
-            ,width: 200
+            ,anchor: '90%'
+        },{
+            fieldLabel: _('for_parent')
+            ,description: _('for_parent_desc')
+            ,name: 'for_parent'
+            ,id: 'modx-'+this.ident+'-for-parent'
+            ,xtype: 'checkbox'
+            ,value: 1
+            ,checked: config.record && !Ext.isEmpty(config.record.for_parent) ? true : false
+        },{ html: '<hr />' },{
+            fieldLabel: _('rank')
+            ,description: _('rank_desc')
+            ,name: 'rank'
+            ,id: 'modx-'+this.ident+'-rank'
+            ,xtype: 'textfield'
+            ,value: 0
         },{
             fieldLabel: _('active')
             ,description: _('active_desc')

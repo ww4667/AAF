@@ -29,7 +29,10 @@ Ext.extend(MODx.panel.ResourceTV,MODx.Panel,{
      */
     autoload: function(config) {
         var t = Ext.getCmp(config.templateField);
-        if (!t && !config.template) { return false; }
+        if (!t && !config.template) {
+            setTimeout("MODx.fireEvent('ready');",300);
+            return false;
+        }
         var template = config.template ? config.template : t.getValue();
         var a = {
             url: MODx.config.manager_url+'index.php?a='+MODx.action['resource/tvs']
@@ -39,12 +42,14 @@ Ext.extend(MODx.panel.ResourceTV,MODx.Panel,{
                ,'class_key': config.class_key
                ,'template': template
                ,'resource': config.resource
+               ,ctx: MODx.ctx
             }
             ,scripts: true
             ,callback: function() {
+                MODx.fireEvent('ready');
+                MODx.sleep(4); /* delay load event to allow FC rules to move before loading RTE */
                 if (MODx.afterTVLoad) { MODx.afterTVLoad(); }
                 this.fireEvent('load');
-                MODx.fireEvent('ready');
             }
             ,scope: this
         };

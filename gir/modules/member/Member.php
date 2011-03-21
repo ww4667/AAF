@@ -19,6 +19,7 @@ class Member extends User {
                                           array("type"=>"text","label"=>"Term","field"=>"term"),
                                           array("type"=>"number","label"=>"Paid","field"=>"paid"),
                                           array("type"=>"number","label"=>"Letter Sent","field"=>"letter_sent"),
+                                          array("type"=>"number","label"=>"Student","field"=>"student"),
 										  array("type"=>"join","label"=>"User Join","field"=>"join_user")
 											);
 	function __construct(){
@@ -44,5 +45,17 @@ class Member extends User {
         $items = $this->GetAllItemsObj();
         return $items;
     }
+    public function getMemberByUserId( $userId ) {
+               // get facilities by materialId and join type "material_join"
+               $u = new User();
+               $user = $u->GetItemObj( $userId );
+               if($user){
+                       $items = $this->ReadForeignJoins( $user );
+                       return $items[0];
+               } else {
+                       return false;
+               }
+       }
+ 
 }
 ?>

@@ -19,8 +19,8 @@ MODx.page.UpdateStatic = function(config) {
         ,formpanel: 'modx-panel-resource'
         ,id: 'modx-page-update-resource'
         ,actions: {
-            'new': MODx.action['resource/staticresource/create']
-            ,edit: MODx.action['resource/staticresource/update']
+            'new': MODx.action['resource/create']
+            ,edit: MODx.action['resource/update']
             ,preview: MODx.action['resource/preview']
             ,cancel: MODx.action['welcome']
         }
@@ -71,7 +71,8 @@ Ext.extend(MODx.page.UpdateStatic,MODx.Component,{
             },this);
         } else {
             MODx.releaseLock(MODx.request.id);
-        };
+            location.href = '?a='+MODx.action['welcome'];
+        }
     }
     ,getButtons: function(cfg) {
         var btns = [];

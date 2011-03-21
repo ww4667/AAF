@@ -19,6 +19,7 @@ MODx.grid.ContextSettings = function(config) {
         ,saveParams: {
             context_key: config.context_key
         }
+        ,fk: config.context_key
         ,autosave: false
         ,tbar: [{
             text: _('create_new')
@@ -66,9 +67,9 @@ MODx.window.UpdateContextSetting = function(config) {
             ,name: 'key'
             ,id: 'modx-ucs-key'
             ,allowBlank: false
-            ,width: 300
             ,value: r.key
-			,submitValue: r.key
+            ,submitValue: r.key
+            ,anchor: '90%'
         },{
             xtype: r.xtype || 'textfield'
             ,fieldLabel: _('value')
@@ -76,6 +77,22 @@ MODx.window.UpdateContextSetting = function(config) {
             ,id: 'modx-ucs-value'
             ,allowBlank: false
             ,value: r.value
+            ,anchor: '90%'
+        },{
+            xtype: 'hidden'
+            ,name: 'xtype'
+            ,id: 'modx-ucs-xtype'
+            ,value: r.xtype
+        },{
+            xtype: 'hidden'
+            ,name: 'area'
+            ,id: 'modx-ucs-area'
+            ,value: r.area
+        },{
+            xtype: 'hidden'
+            ,name: 'namespace'
+            ,id: 'modx-ucs-namespace'
+            ,value: r.namespace
         }]
     });
     MODx.window.UpdateContextSetting.superclass.constructor.call(this,config);

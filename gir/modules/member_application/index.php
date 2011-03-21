@@ -75,16 +75,15 @@ switch($method){/* Add Member */
     $theApp->approved = 1;
     $a->UpdateItem();   
     
+    $u->SetPasswordResetKey($app_data["email"]);
+    
     $email_data["email"] = $app_data["email"];
     $email_data["fname"] = $app_data["first_name"];
     $email_data["lname"] = $app_data["last_name"];
+    $email_data["password_reset"] = $u->password_reset;
     
     Mailer::application_approved_email($email_data);
-      
-    
-    //this is where we send credit card information
-    
-  
+   
     
   break;
 	

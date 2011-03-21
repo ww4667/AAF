@@ -17,7 +17,10 @@ MODx.grid.Grid = function(config) {
         ,stripeRows: true
         ,header: false
         ,cls: 'modx-grid'
+        ,preventRender: true
         ,preventSaveRefresh: true
+        ,showPerPage: true
+        ,stateful: false
         ,menuConfig: {
             defaultAlign: 'tl-b?'
             ,enableScrolling: false
@@ -32,25 +35,32 @@ MODx.grid.Grid = function(config) {
         }
     });
     if (config.paging) {
+        var pgItms = config.showPerPage ? ['-',_('per_page')+':',{
+            xtype: 'textfield'
+            ,value: config.pageSize || (parseInt(MODx.config.default_per_page) || 20)
+            ,width: 40
+            ,listeners: {
+                'change': {fn:function(tf,nv,ov) {
+                    nv = parseInt(nv);
+                    this.getBottomToolbar().pageSize = nv;
+                    this.store.load({params:{
+                        start:0
+                        ,limit: nv
+                    }});
+                },scope:this}
+            }
+        }] : [];
+        if (config.pagingItems) {
+            for (var i=0;i<config.pagingItems.length;i++) {
+                pgItms.push(config.pagingItems[i]);
+            }
+        }
         Ext.applyIf(config,{
             bbar: new Ext.PagingToolbar({
-                pageSize: config.pageSize || (MODx.config.default_per_page || 20)
+                pageSize: config.pageSize || (parseInt(MODx.config.default_per_page) || 20)
                 ,store: this.getStore()
                 ,displayInfo: true
-                ,items: config.pagingItems || ['-',_('per_page')+':',{
-                    xtype: 'textfield'
-                    ,value: config.pageSize || (MODx.config.default_per_page || 20)
-                    ,width: 40
-                    ,listeners: {
-                        'change': {fn:function(tf,nv,ov) {
-                            this.getBottomToolbar().pageSize = nv;
-                            this.store.load({params:{
-                                start:0
-                                ,limit: nv
-                            }});
-                        },scope:this}
-                    }
-                }]
+                ,items: pgItms
             })
         });
     }
@@ -76,10 +86,7 @@ MODx.grid.Grid = function(config) {
     }
     MODx.grid.Grid.superclass.constructor.call(this,config);
     this._loadMenu(config);
-    this.addEvents({
-        beforeRemoveRow: true
-        ,afterRemoveRow: true
-    });
+    this.addEvents('beforeRemoveRow','afterRemoveRow','afterAutoSave');
     if (!config.preventRender) { this.render(); }
 	
     this.on('rowcontextmenu',this._showMenu,this);    
@@ -94,7 +101,7 @@ MODx.grid.Grid = function(config) {
     this.getStore().load({
         params: {
             start: config.pageStart || 0
-            ,limit: config.pageSize || 20
+            ,limit: config.pageSize || (parseInt(MODx.config.default_per_page) || 20)
         }
         ,scope: this
         ,callback: function() { this.getStore().reload(); } /* fixes comboeditor bug */
@@ -134,6 +141,7 @@ Ext.extend(MODx.grid.Grid,Ext.grid.EditorGridPanel,{
                     if (!this.config.preventSaveRefresh) {
                         this.refresh();
                     }
+                    this.fireEvent('afterAutoSave',r);
                 },scope:this}
             }
         });
@@ -432,9 +440,10 @@ MODx.grid.LocalGrid = function(config) {
           view: new Ext.grid.GroupingView({ 
             forceFit: true 
             ,scrollOffset: 0
-            ,groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "'
+            ,hideGroupedColumn: config.hideGroupedColumn ? true : false
+            ,groupTextTpl: config.groupTextTpl || ('{text} ({[values.rs.length]} {[values.rs.length > 1 ? "'
                 +(config.pluralText || _('records')) + '" : "'
-                +(config.singleText || _('record'))+'"]})' 
+                +(config.singleText || _('record'))+'"]})' )
           })
         });
     }
@@ -486,7 +495,7 @@ Ext.extend(MODx.grid.LocalGrid,Ext.grid.EditorGridPanel,{
             this.store = new Ext.data.GroupingStore({
                 data: config.data || []
                 ,reader: new Ext.data.ArrayReader({},config.fields || [])
-                ,sortInfo:{
+                ,sortInfo: config.sortInfo || {
                     field: config.sortBy || 'name'
                     ,direction: config.sortDir || 'ASC'
                 }

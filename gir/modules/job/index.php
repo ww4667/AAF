@@ -73,6 +73,43 @@ switch($method){/* Add Member */
     require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");      
     break;
 	
+  case 'admin-view-job-details':
+    $j = new Job();
+    $job = $_GET["job"];
+    
+    $PAGE_BODY = "admin_job_details.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");      
+    break;
+    
+  case 'admin_view_jobs':
+    $j = new Job();
+        
+    $PAGE_BODY = "admin_view_jobs.php";      /* which file to pull into the template */
+     
+    require($_SERVER['DOCUMENT_ROOT']."/gir/views/layouts/shell.php");  
+  break;
+  
+  /* Add Member */
+  case 'approve-job':
+    $j = new Job();
+    
+    $job_id = $_GET["job_id"];
+    
+    $theJob = $j->GetItemObj( $job_id );
+    
+    $theJob->approved = 1;
+    $j->UpdateItem();   
+    
+    //$email_data["email"] = $app_data["email"];
+    //$email_data["fname"] = $app_data["first_name"];
+    //$email_data["lname"] = $app_data["last_name"];
+    
+    //Mailer::job_approved_email($email_data);
+          
+    //this is where we send credit card information
+      
+  break;
 }
 
 ?>

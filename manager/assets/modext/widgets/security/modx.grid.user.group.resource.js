@@ -1,6 +1,11 @@
 
 MODx.grid.UserGroupResourceGroup = function(config) {
     config = config || {};
+    this.exp = new Ext.grid.RowExpander({
+        tpl : new Ext.Template(
+            '<p class="desc">{permissions}</p>'
+        )
+    });
     Ext.applyIf(config,{
         id: 'modx-grid-user-group-resource-groups'
         ,url: MODx.config.connectors_url+'security/access/usergroup/resourcegroup.php'
@@ -10,8 +15,9 @@ MODx.grid.UserGroupResourceGroup = function(config) {
         }
         ,paging: true
         ,hideMode: 'offsets'
-        ,fields: ['id','target','name','principal','authority','authority_name','policy','policy_name','context_key','menu']
-        ,columns: [{
+        ,fields: ['id','target','name','principal','authority','authority_name','policy','policy_name','context_key','permissions','menu']
+        ,plugins: [this.exp]
+        ,columns: [this.exp,{
             header: _('resource_group')
             ,dataIndex: 'name'
             ,width: 120
@@ -45,6 +51,10 @@ MODx.grid.UserGroupResourceGroup = function(config) {
             xtype: 'modx-combo-policy'
             ,id: 'modx-ugrg-policy-filter'
             ,emptyText: _('filter_by_policy')
+            ,baseParams: {
+                action: 'getList'
+                ,group: 'Object'
+            }
             ,allowBlank: true
             ,listeners: {
                 'select': {fn:this.filterPolicy,scope:this}
@@ -137,11 +147,13 @@ MODx.window.CreateUGRG = function(config) {
             ,name: 'target'
             ,hiddenName: 'target'
             ,editable: false
+            ,anchor: '90%'
         },{
             xtype: 'modx-combo-authority'
             ,fieldLabel: _('minimum_role')
             ,name: 'authority'
             ,value: 0
+            ,anchor: '90%'
         },{
             xtype: 'modx-combo-policy'
             ,fieldLabel: _('policy')
@@ -149,8 +161,10 @@ MODx.window.CreateUGRG = function(config) {
             ,hiddenName: 'policy'
             ,baseParams: {
                 action: 'getList'
+                ,group: 'Resource,Object'
                 ,combo: '1'
             }
+            ,anchor: '90%'
         },{
             xtype: 'hidden'
             ,name: 'principal'
@@ -165,6 +179,7 @@ MODx.window.CreateUGRG = function(config) {
             ,name: 'context_key'
             ,hiddenName: 'context_key'
             ,editable: false
+            ,anchor: '90%'
         }]
     });
     MODx.window.CreateUGRG.superclass.constructor.call(this,config);
@@ -190,11 +205,13 @@ MODx.window.UpdateUGRG = function(config) {
             ,name: 'target'
             ,hiddenName: 'target'
             ,editable: false
+            ,anchor: '90%'
         },{
             xtype: 'modx-combo-authority'
             ,fieldLabel: _('minimum_role')
             ,name: 'authority'
             ,value: 0
+            ,anchor: '90%'
         },{
             xtype: 'modx-combo-policy'
             ,fieldLabel: _('policy')
@@ -202,8 +219,10 @@ MODx.window.UpdateUGRG = function(config) {
             ,hiddenName: 'policy'
             ,baseParams: {
                 action: 'getList'
+                ,group: 'Resource,Object'
                 ,combo: '1'
             }
+            ,anchor: '90%'
         },{
             xtype: 'hidden'
             ,name: 'principal'
@@ -218,6 +237,7 @@ MODx.window.UpdateUGRG = function(config) {
             ,name: 'context_key'
             ,hiddenName: 'context_key'
             ,editable: false
+            ,anchor: '90%'
         }]
     });
     MODx.window.UpdateUGRG.superclass.constructor.call(this,config);

@@ -84,7 +84,7 @@ MODx.panel.Snippet = function(config) {
                 ,name: 'clearCache'
                 ,id: 'modx-snippet-clear-cache'
                 ,inputValue: 1
-                ,checked: config.record.clearCache || 1
+                ,checked: Ext.isDefined(config.record.clearCache) || true
             },{
                 html: MODx.onSnipFormRender
                 ,border: false
@@ -153,9 +153,11 @@ Ext.extend(MODx.panel.Snippet,MODx.FormPanel,{
         this.getForm().setValues(r.result.object);
         
         var t = Ext.getCmp('modx-element-tree');
-        var c = Ext.getCmp('modx-snippet-category').getValue();
-        var u = c != '' && c != null ? 'n_snippet_category_'+c : 'n_type_snippet'; 
-        t.refreshNode(u,true);
+        if (t) {
+            var c = Ext.getCmp('modx-snippet-category').getValue();
+            var u = c != '' && c != null ? 'n_snippet_category_'+c : 'n_type_snippet';
+            t.refreshNode(u,true);
+        }
     }    
     ,changeEditor: function() {
         this.cleanupEditor();

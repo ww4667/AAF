@@ -1,8 +1,17 @@
 <div id="nav_wrapper">
 
 	<ul id="service_links">
+	<? 
+	   if (isset($_SESSION['user']['id'])){
+    ?>
+        <li><a tabindex="2" href="[[~48]]">LOG OUT</a></li>        
+        <? 
+	   } else {
+	?> 
 		<li><a tabindex="2" href="[[~10]]">LOG IN</a></li>
 		<li><a tabindex="3" href="[[~11]]">JOIN</a></li>
+		
+		<? } ?>
 	</ul>
 
 	<div id="navBox" class="topnav">

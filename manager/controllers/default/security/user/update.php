@@ -19,17 +19,17 @@ if (!empty($remoteData)) {
     $remoteFields = parseCustomData($remoteData);
 }
 
-function parseCustomData(array $remoteData = array()) {
+function parseCustomData(array $remoteData = array(),$path = '') {
     $fields = array();
     foreach ($remoteData as $key => $value) {
         $field = array(
             'name' => $key,
-            'id' => $key,
+            'id' => (!empty($path) ? $path.'.' : '').$key,
         );
         if (is_array($value)) {
             $field['text'] = $key;
             $field['leaf'] = false;
-            $field['children'] = parseCustomData($value);
+            $field['children'] = parseCustomData($value,$key);
         } else {
             $v = $value;
             if (strlen($v) > 30) { $v = substr($v,0,30).'...'; }
@@ -78,6 +78,7 @@ MODx.onUserFormRender = "'.$onUserFormRender.'";
 </script>');
 
 /* register JS scripts */
+$modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/util/datetime.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/core/modx.orm.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/core/modx.grid.settings.js');
 $modx->regClientStartupScript($modx->getOption('manager_url').'assets/modext/widgets/security/modx.grid.user.settings.js');
@@ -98,4 +99,5 @@ Ext.onReady(function() {
 // ]]>
 </script>');
 
+$this->checkFormCustomizationRules($user);
 return $modx->smarty->fetch('security/user/update.tpl');

@@ -355,24 +355,21 @@ MODx.combo.ContentDisposition = function(config) {
 Ext.extend(MODx.combo.ContentDisposition,Ext.form.ComboBox);
 Ext.reg('modx-combo-content-disposition',MODx.combo.ContentDisposition);
 
-MODx.combo.ClassKey = function(config) {
+MODx.combo.ClassMap = function(config) {
     config = config || {};
     Ext.applyIf(config,{
-        name: 'classKey'
-        ,hiddenName: 'classKey'
-        ,url: MODx.config.connectors_url+'workspace/builder/index.php'
-        ,baseParams: { 
-            action: 'getClassKeys'
-        }
-        ,displayField: 'key'
-        ,valueField: 'key'
-        ,fields: ['key']
+        name: 'class'
+        ,hiddenName: 'class'
+        ,url: MODx.config.connectors_url+'system/classmap.php'
+        ,displayField: 'class'
+        ,valueField: 'class'
+        ,fields: ['class']
         ,editable: false
     });
-    MODx.combo.ClassKey.superclass.constructor.call(this,config);
+    MODx.combo.ClassMap.superclass.constructor.call(this,config);
 };
-Ext.extend(MODx.combo.ClassKey,MODx.combo.ComboBox);
-Ext.reg('modx-combo-class-key',MODx.combo.ClassKey);
+Ext.extend(MODx.combo.ClassMap,MODx.combo.ComboBox);
+Ext.reg('modx-combo-class-map',MODx.combo.ClassMap);
 
 MODx.combo.Object = function(config) {
     config = config || {};
@@ -537,36 +534,68 @@ Ext.extend(MODx.ChangeParentField,Ext.form.TriggerField,{
             });
             return false;
         }
-        
+        MODx.debug('onTriggerClick');
+
         var t = Ext.getCmp('modx-resource-tree');
-        if (!t) { return false; }
-        
+        if (!t) {
+            MODx.debug('no tree found, trying to activate');
+            var tp = Ext.getCmp('modx-leftbar-tabpanel');
+            if (tp) {
+                tp.on('tabchange',function(tbp,tab) {
+                    if (tab.id == 'modx-resource-tree-ct') {
+                        this.disableTreeClick();
+                    }
+                },this);
+                tp.activate('modx-resource-tree-ct');
+            } else {
+                MODx.debug('no tabpanel');
+            }
+            return false;
+        }
+
+        this.disableTreeClick();
+    }
+
+    ,disableTreeClick: function() {
+        MODx.debug('Disabling tree click');
+        t = Ext.getCmp('modx-resource-tree');
+        if (!t) {
+            MODx.debug('No tree found in disableTreeClick!');
+            return false;
+        }
         this.oldDisplayValue = this.getValue();
         this.oldValue = Ext.getCmp('modx-resource-parent-hidden').getValue();
-        
+
         this.setValue(_('resource_parent_select_node'));
-        
+
         t.expand();
         t.removeListener('click',t._handleClick);
         t.on('click',this.handleChangeParent,this);
         t.disableHref = true;
-        return true;
-    }
+
+        return true;}
         
     ,handleChangeParent: function(node,e) {
         var t = Ext.getCmp('modx-resource-tree');
         if (!t) { return false; }
         t.disableHref = true;
-        
+
         var id = node.id.split('_'); id = id[1];
         if (id == MODx.request.id) {
             MODx.msg.alert('',_('resource_err_own_parent'));            
             return false;
         }
-        
+
+        var ctxf = Ext.getCmp('modx-resource-context-key');
+        if (ctxf) {
+            var ctxv = ctxf.getValue();
+            if (node.attributes && node.attributes.ctx != ctxv) {
+                ctxf.setValue(node.attributes.ctx);
+            }
+        }
         this.fireEvent('end',{
             v: node.attributes.type != 'modContext' ? id : node.attributes.pk
-            ,d: node.text
+            ,d: Ext.util.Format.stripTags(node.text)
         });
         e.preventDefault();
         e.stopEvent();

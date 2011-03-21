@@ -10,7 +10,7 @@ MODx.tree.Element = function(config) {
     config = config || {};
     Ext.applyIf(config,{
         rootVisible: false
-        ,enableDD: true
+        ,enableDD: !Ext.isEmpty(MODx.config.enable_dragdrop) ? true : false
         ,ddGroup: 'modx-treedrop-dd'
         ,title: ''
         ,url: MODx.config.connectors_url+'element/index.php'
@@ -258,7 +258,7 @@ Ext.extend(MODx.tree.Element,MODx.tree.Tree,{
         if (e.target.attributes.type == 'category' && e.point == 'append') {return true;}
 
         if (!this.isCorrectType(e.dropNode,target)) {return false;}
-
+        
         return e.target.getDepth() > 0;
     }
     

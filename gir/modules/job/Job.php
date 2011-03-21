@@ -30,7 +30,6 @@ class Job extends Crud {
 	
     
     public function showApprovedJobs(){
-        $items = $this->GetAllItemsObj();
         $items = $this->QueryObjectItems("approved != 1");
         return $items;
     }
@@ -39,6 +38,11 @@ class Job extends Crud {
         $theJob = $this->GetItem( $job);
         return $theJob;
                    
+    }
+    
+    public function adminViewJobs(){
+        $items = $this->QueryObjectItems("approved = ''");
+        return $items;
     }
 }
 ?>
