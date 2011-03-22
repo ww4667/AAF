@@ -13,7 +13,7 @@ modext.js
 
 # ignore common root paths for docs and assets
 /docs/
-/assets/
+# /assets/
 
 .tmp_*
 .project
